@@ -28,6 +28,21 @@ const router = createRouter({
       component: EmptyRouteView,
     },
     {
+      path: '/socket-security',
+      name: 'socket-security',
+      component: EmptyRouteView,
+    },
+    {
+      path: '/supabase',
+      name: 'supabase',
+      component: EmptyRouteView,
+    },
+    {
+      path: '/sentinels',
+      name: 'sentinels',
+      component: EmptyRouteView,
+    },
+    {
       path: '/new-thread',
       redirect: { name: 'home' },
     },

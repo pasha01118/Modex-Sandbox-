@@ -37,14 +37,6 @@
     "scripts/dev-random-home.cjs",
     "scripts/fix-pty-native-build.cjs"
   ],
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "@firebase/util",
-      "esbuild",
-      "node-pty",
-      "protobufjs"
-    ]
-  },
   "scripts": {
     "dev": "node scripts/dev.cjs",
     "dev2": "node scripts/dev-random-home.cjs",
@@ -59,8 +51,18 @@
     "profile:browser": "node scripts/profile-browser-runtime.cjs",
     "profile:thread": "PROFILE_ROUTE='#/thread/019da7c0-4e12-7a91-837c-f7c11cc8ab6c' node scripts/profile-browser-runtime.cjs"
   },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@firebase/util",
+      "esbuild",
+      "node-pty",
+      "protobufjs"
+    ]
+  },
   "dependencies": {
     "@composio/client": "0.1.0-alpha.66",
+    "@socketsecurity/sdk": "^4.0.1",
+    "@supabase/supabase-js": "^2.108.2",
     "@xterm/addon-fit": "^0.11.0",
     "@xterm/xterm": "^6.0.0",
     "commander": "^13.1.0",

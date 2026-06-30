@@ -49,34 +49,77 @@
           </div>
 
           <button
-            v-if="!isSidebarCollapsed"
             class="sidebar-skills-link"
-            :class="{ 'is-active': isSkillsRoute }"
+            :class="{ 'is-active': isSkillsRoute, 'is-collapsed': isSidebarCollapsed }"
             type="button"
             @click="router.push({ name: 'skills' }); isMobile && setSidebarCollapsed(true)"
           >
             <span class="sidebar-skills-link-icon" aria-hidden="true">
               <IconTablerBolt />
             </span>
-            <span class="sidebar-skills-link-copy">
+            <span v-if="!isSidebarCollapsed" class="sidebar-skills-link-copy">
               <span class="sidebar-skills-link-title">{{ t('Skills') }}</span>
               <span class="sidebar-skills-link-subtitle">{{ t('Plugins, apps, MCPs') }}</span>
             </span>
           </button>
 
           <button
-            v-if="!isSidebarCollapsed"
             class="sidebar-skills-link"
-            :class="{ 'is-active': isAutomationsRoute }"
+            :class="{ 'is-active': isAutomationsRoute, 'is-collapsed': isSidebarCollapsed }"
             type="button"
             @click="router.push({ name: 'automations' }); isMobile && setSidebarCollapsed(true)"
           >
             <span class="sidebar-skills-link-icon sidebar-automations-link-icon" aria-hidden="true">
               <IconTablerBolt />
             </span>
-            <span class="sidebar-skills-link-copy">
+            <span v-if="!isSidebarCollapsed" class="sidebar-skills-link-copy">
               <span class="sidebar-skills-link-title">{{ t('Automations') }}</span>
               <span class="sidebar-skills-link-subtitle">{{ t('Scheduled work') }}</span>
+            </span>
+          </button>
+
+          <button
+            class="sidebar-skills-link"
+            :class="{ 'is-active': isSocketSecurityRoute, 'is-collapsed': isSidebarCollapsed }"
+            type="button"
+            @click="router.push({ name: 'socket-security' }); isMobile && setSidebarCollapsed(true)"
+          >
+            <span class="sidebar-skills-link-icon sidebar-socket-link-icon" aria-hidden="true">
+              <IconTablerShieldCheck />
+            </span>
+            <span v-if="!isSidebarCollapsed" class="sidebar-skills-link-copy">
+              <span class="sidebar-skills-link-title">{{ t('Security') }}</span>
+              <span class="sidebar-skills-link-subtitle">{{ t('Package scanner') }}</span>
+            </span>
+          </button>
+
+          <button
+            class="sidebar-skills-link"
+            :class="{ 'is-active': isSupabaseRoute, 'is-collapsed': isSidebarCollapsed }"
+            type="button"
+            @click="router.push({ name: 'supabase' }); isMobile && setSidebarCollapsed(true)"
+          >
+            <span class="sidebar-skills-link-icon sidebar-supabase-link-icon" aria-hidden="true">
+              <IconTablerDatabase />
+            </span>
+            <span v-if="!isSidebarCollapsed" class="sidebar-skills-link-copy">
+              <span class="sidebar-skills-link-title">{{ t('Supabase') }}</span>
+              <span class="sidebar-skills-link-subtitle">{{ t('Database, auth, storage') }}</span>
+            </span>
+          </button>
+
+          <button
+            class="sidebar-skills-link"
+            :class="{ 'is-active': isSentinelsRoute, 'is-collapsed': isSidebarCollapsed }"
+            type="button"
+            @click="router.push({ name: 'sentinels' }); isMobile && setSidebarCollapsed(true)"
+          >
+            <span class="sidebar-skills-link-icon sidebar-sentinels-link-icon" aria-hidden="true">
+              <IconTablerShieldScan />
+            </span>
+            <span v-if="!isSidebarCollapsed" class="sidebar-skills-link-copy">
+              <span class="sidebar-skills-link-title">{{ t('Sentinels') }}</span>
+              <span class="sidebar-skills-link-subtitle">{{ t('Security monitoring') }}</span>
             </span>
           </button>
 
@@ -521,7 +564,7 @@
         :style="contentStyle"
       >
         <span v-if="isVirtualKeyboardOpen" class="content-keyboard-spacer" aria-hidden="true" />
-        <ContentHeader :title="contentTitle" :accent="isSkillsRoute || isAutomationsRoute">
+        <ContentHeader :title="contentTitle" :accent="isSkillsRoute || isAutomationsRoute || isSocketSecurityRoute || isSupabaseRoute || isSentinelsRoute">
           <template #leading>
             <SidebarThreadControls
               v-if="isSidebarCollapsed || isMobile"
@@ -536,6 +579,15 @@
             </span>
             <span v-else-if="isAutomationsRoute" class="skills-route-header-icon automations-route-header-icon" aria-hidden="true">
               <IconTablerBolt />
+            </span>
+            <span v-else-if="isSocketSecurityRoute" class="skills-route-header-icon socket-route-header-icon" aria-hidden="true">
+              <IconTablerShieldCheck />
+            </span>
+            <span v-else-if="isSupabaseRoute" class="skills-route-header-icon supabase-route-header-icon" aria-hidden="true">
+              <IconTablerDatabase />
+            </span>
+            <span v-else-if="isSentinelsRoute" class="skills-route-header-icon sentinels-route-header-icon" aria-hidden="true">
+              <IconTablerShieldScan />
             </span>
           </template>
           <template #actions>
@@ -605,6 +657,15 @@
               @edit-automation="onEditAutomationFromPanel"
               @create-automation="onCreateAutomationFromPanel"
             />
+          </template>
+          <template v-else-if="isSocketSecurityRoute">
+            <SocketSecurityPanel />
+          </template>
+          <template v-else-if="isSupabaseRoute">
+            <SupabasePanel />
+          </template>
+          <template v-else-if="isSentinelsRoute">
+            <SentinelsPanel />
           </template>
           <template v-else-if="isHomeRoute">
             <div class="content-grid content-grid-home">
@@ -1181,6 +1242,9 @@ import HeaderGitBranchDropdown from './components/content/HeaderGitBranchDropdow
 import ComposerRuntimeDropdown from './components/content/ComposerRuntimeDropdown.vue'
 import SidebarThreadControls from './components/sidebar/SidebarThreadControls.vue'
 import IconTablerBolt from './components/icons/IconTablerBolt.vue'
+import IconTablerShieldCheck from './components/icons/IconTablerShieldCheck.vue'
+import IconTablerDatabase from './components/icons/IconTablerDatabase.vue'
+import IconTablerShieldScan from './components/icons/IconTablerShieldScan.vue'
 import IconTablerSearch from './components/icons/IconTablerSearch.vue'
 import IconTablerSettings from './components/icons/IconTablerSettings.vue'
 import IconTablerTerminal from './components/icons/IconTablerTerminal.vue'
@@ -1237,6 +1301,9 @@ const ThreadTerminalPanel = defineAsyncComponent(() => import('./components/cont
 const ReviewPane = defineAsyncComponent(() => import('./components/content/ReviewPane.vue'))
 const DirectoryHub = defineAsyncComponent(() => import('./components/content/DirectoryHub.vue'))
 const AutomationsPanel = defineAsyncComponent(() => import('./components/content/AutomationsPanel.vue'))
+const SocketSecurityPanel = defineAsyncComponent(() => import('./components/content/SocketSecurityPanel.vue'))
+const SupabasePanel = defineAsyncComponent(() => import('./components/content/SupabasePanel.vue'))
+const SentinelsPanel = defineAsyncComponent(() => import('./components/content/SentinelsPanel.vue'))
 const { t, uiLanguage, uiLanguageOptions, setUiLanguage } = useUiLanguage()
 
 const SIDEBAR_COLLAPSED_STORAGE_KEY = 'codex-web-local.sidebar-collapsed.v1'
@@ -1731,6 +1798,9 @@ const routeThreadId = computed(() => {
 const isHomeRoute = computed(() => route.name === 'home')
 const isSkillsRoute = computed(() => route.name === 'skills')
 const isAutomationsRoute = computed(() => route.name === 'automations')
+const isSocketSecurityRoute = computed(() => route.name === 'socket-security')
+const isSupabaseRoute = computed(() => route.name === 'supabase')
+const isSentinelsRoute = computed(() => route.name === 'sentinels')
 const routeAutomationId = computed(() => {
   const raw = route.query.automationId
   return typeof raw === 'string' ? raw : ''
@@ -1738,6 +1808,9 @@ const routeAutomationId = computed(() => {
 const contentTitle = computed(() => {
   if (isAutomationsRoute.value) return t('Automations')
   if (isSkillsRoute.value) return t('Skills')
+  if (isSocketSecurityRoute.value) return t('Socket Security')
+  if (isSupabaseRoute.value) return t('Supabase')
+  if (isSentinelsRoute.value) return t('Sentinels')
   if (isHomeRoute.value) return t('Start new thread')
   return selectedThread.value?.title ?? t('Choose a thread')
 })
@@ -1801,7 +1874,7 @@ const isTerminalKeyboardLayoutActive = computed(() => (
 ))
 const directoryCwd = computed(() => selectedThread.value?.cwd?.trim() ?? newThreadCwd.value.trim())
 const isSelectedThreadInProgress = computed(() => !isHomeRoute.value && selectedThread.value?.inProgress === true)
-const showThreadContextBadge = computed(() => !isHomeRoute.value && !isSkillsRoute.value && !isAutomationsRoute.value && selectedThreadId.value.trim().length > 0)
+const showThreadContextBadge = computed(() => !isHomeRoute.value && !isSkillsRoute.value && !isAutomationsRoute.value && !isSocketSecurityRoute.value && !isSupabaseRoute.value && !isSentinelsRoute.value && selectedThreadId.value.trim().length > 0)
 const isAccountSwitchBlocked = computed(() =>
   isSendingMessage.value ||
   isInterruptingTurn.value ||
@@ -4200,7 +4273,7 @@ function onImplementPlan(payload: { turnId: string }): void {
 
 
 async function copySelectedThreadChat(): Promise<void> {
-  if (isHomeRoute.value || isSkillsRoute.value || isAutomationsRoute.value) return
+  if (isHomeRoute.value || isSkillsRoute.value || isAutomationsRoute.value || isSocketSecurityRoute.value || isSupabaseRoute.value || isSentinelsRoute.value) return
   if (!selectedThread.value || filteredMessages.value.length === 0) return
   const markdown = buildThreadMarkdown()
   try {
@@ -4655,7 +4728,7 @@ async function syncThreadSelectionWithRoute(): Promise<void> {
     do {
       hasPendingRouteSync = false
 
-      if (route.name === 'home' || route.name === 'skills' || route.name === 'automations') {
+      if (route.name === 'home' || route.name === 'skills' || route.name === 'automations' || route.name === 'socket-security') {
         if (selectedThreadId.value !== '') {
           await selectThread('')
         }
@@ -4726,7 +4799,7 @@ watch(
   async (threadId) => {
     if (!hasInitialized.value) return
     if (isRouteSyncInProgress.value) return
-    if (isHomeRoute.value || isSkillsRoute.value || isAutomationsRoute.value) return
+    if (isHomeRoute.value || isSkillsRoute.value || isAutomationsRoute.value || isSocketSecurityRoute.value || isSupabaseRoute.value || isSentinelsRoute.value) return
 
     if (!threadId) {
       if (route.name !== 'home') {
@@ -5043,6 +5116,10 @@ async function loadWorktreeBranches(sourceCwd: string): Promise<void> {
   @apply mx-2 flex items-center gap-3 rounded-2xl border border-transparent bg-transparent px-3 py-2.5 text-left text-zinc-700 transition hover:bg-zinc-100 hover:text-zinc-950 cursor-pointer;
 }
 
+.sidebar-skills-link.is-collapsed {
+  @apply mx-1.5 justify-center px-2 py-2;
+}
+
 .sidebar-skills-link.is-active {
   @apply border-transparent bg-zinc-100 text-zinc-950;
 }
@@ -5053,6 +5130,18 @@ async function loadWorktreeBranches(sourceCwd: string): Promise<void> {
 
 .sidebar-automations-link-icon {
   @apply bg-amber-500;
+}
+
+.sidebar-socket-link-icon {
+  @apply bg-blue-600;
+}
+
+.sidebar-supabase-link-icon {
+  @apply bg-emerald-500;
+}
+
+.sidebar-sentinels-link-icon {
+  @apply bg-violet-600;
 }
 
 .sidebar-skills-link-icon :deep(svg) {
@@ -5083,6 +5172,18 @@ async function loadWorktreeBranches(sourceCwd: string): Promise<void> {
   @apply bg-amber-500 shadow-[0_16px_32px_-20px_rgba(245,158,11,0.9)];
 }
 
+.socket-route-header-icon {
+  @apply bg-blue-600 shadow-[0_16px_32px_-20px_rgba(37,99,235,0.9)];
+}
+
+.supabase-route-header-icon {
+  @apply bg-emerald-500 shadow-[0_16px_32px_-20px_rgba(16,185,129,0.9)];
+}
+
+.sentinels-route-header-icon {
+  @apply bg-violet-600 shadow-[0_16px_32px_-20px_rgba(124,58,237,0.9)];
+}
+
 .skills-route-header-icon :deep(svg) {
   @apply h-4.5 w-4.5;
 }
@@ -5093,6 +5194,18 @@ async function loadWorktreeBranches(sourceCwd: string): Promise<void> {
 
 :global(:root.dark) .sidebar-skills-link-subtitle {
   @apply text-zinc-400;
+}
+
+:global(:root.dark) .sidebar-skills-link.is-collapsed {
+  @apply text-zinc-400;
+}
+
+:global(:root.dark) .sidebar-skills-link.is-collapsed:hover {
+  @apply bg-zinc-800 text-zinc-50;
+}
+
+:global(:root.dark) .sidebar-skills-link.is-collapsed.is-active {
+  @apply bg-zinc-800 text-zinc-50;
 }
 
 .content-body {

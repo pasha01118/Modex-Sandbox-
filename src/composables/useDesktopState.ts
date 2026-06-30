@@ -631,7 +631,6 @@ function isUnsupportedChatGptModelError(error: unknown): boolean {
   const message = error.message.toLowerCase()
   return (
     message.includes('not supported when using codex with a chatgpt account') ||
-    message.includes('model is not supported') ||
     message.includes('requires a newer version of codex')
   )
 }
@@ -3857,7 +3856,7 @@ export function useDesktopState() {
         })
       }
       error.value = notificationErrorState.message
-      if (errorThreadModelId !== MODEL_FALLBACK_ID && isUnsupportedChatGptModelError(new Error(notificationErrorState.message))) {
+      if (errorThreadModelId !== MODEL_FALLBACK_ID && !notificationErrorState.transient && isUnsupportedChatGptModelError(new Error(notificationErrorState.message))) {
         if (errorThreadId) {
           void retryPendingTurnWithFallback(errorThreadId)
         } else {

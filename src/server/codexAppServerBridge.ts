@@ -12,6 +12,9 @@ import { createInterface } from 'node:readline'
 import { once } from 'node:events'
 import { writeFile } from 'node:fs/promises'
 import { handleAccountRoutes } from './accountRoutes.js'
+import { handleSocketSecurityRoutes } from './socketSecurityRouter.js'
+import { handleSupabaseRoutes } from './supabaseRouter.js'
+import { handleSentinelRoutes } from './sentinelRouter.js'
 import { buildAppServerArgs } from './appServerRuntimeConfig.js'
 import { callRpcWithRateLimitDecodeRecovery } from './rateLimitDecodeRecovery.js'
 import { handleReviewRoutes } from './reviewGit.js'
@@ -1022,6 +1025,7 @@ function mergeStreamTurnErrorsIntoThreadResult(appServer: AppServerProcess, resu
   }
 }
 
+const WARNED_AUTH_READ_FAILURES_MAX = 100
 const warnedCodexAuthReadFailures = new Set<string>()
 
 function getErrorCode(error: unknown): string | null {
@@ -1040,6 +1044,9 @@ function warnCodexAuthReadFailure(authPath: string, error: unknown): void {
   const message = getCodexAuthReadErrorMessage(error)
   const warningKey = `${authPath}:${message}`
   if (warnedCodexAuthReadFailures.has(warningKey)) return
+  if (warnedCodexAuthReadFailures.size >= WARNED_AUTH_READ_FAILURES_MAX) {
+    warnedCodexAuthReadFailures.clear()
+  }
   warnedCodexAuthReadFailures.add(warningKey)
   console.warn('[codex-auth] Unable to read Codex auth state', { path: authPath, error: message })
 }
@@ -2759,6 +2766,8 @@ function parseComposioJson<T>(stdout: string, fallback: string): T {
   return JSON.parse(trimmed) as T
 }
 
+const DEFAULT_CLI_TIMEOUT_MS = 30_000
+
 async function runComposioJson<T>(args: string[], fallback: string): Promise<T> {
   const invocation = resolveComposioInvocation(args)
   if (!invocation) {
@@ -2779,8 +2788,26 @@ async function runComposioJson<T>(args: string[], fallback: string): Promise<T> 
   child.stderr.on('data', (chunk) => { stderr += chunk })
 
   const exitCode = await new Promise<number>((resolveExit, reject) => {
-    child.once('error', reject)
-    child.once('close', (code) => resolveExit(code ?? 0))
+    let settled = false
+    const timer = setTimeout(() => {
+      if (settled) return
+      settled = true
+      child.kill('SIGKILL')
+      reject(new Error(`Composio CLI timed out after ${DEFAULT_CLI_TIMEOUT_MS}ms (${args.join(' ')})`))
+    }, DEFAULT_CLI_TIMEOUT_MS)
+    timer.unref()
+    child.once('error', (err) => {
+      if (settled) return
+      settled = true
+      clearTimeout(timer)
+      reject(err)
+    })
+    child.once('close', (code) => {
+      if (settled) return
+      settled = true
+      clearTimeout(timer)
+      resolveExit(code ?? 0)
+    })
   })
 
   if (exitCode !== 0) {
@@ -4239,12 +4266,28 @@ async function runCommandCaptureRaw(command: string, args: string[], options: { 
       env: process.env,
       stdio: ['ignore', 'pipe', 'pipe'],
     })
+    let settled = false
     let stdout = ''
     let stderr = ''
+    const timer = setTimeout(() => {
+      if (settled) return
+      settled = true
+      proc.kill('SIGKILL')
+      reject(new Error(`Command timed out after ${DEFAULT_CLI_TIMEOUT_MS}ms (${command} ${args.join(' ')})`))
+    }, DEFAULT_CLI_TIMEOUT_MS)
+    timer.unref()
     proc.stdout.on('data', (chunk: Buffer) => { stdout += chunk.toString() })
     proc.stderr.on('data', (chunk: Buffer) => { stderr += chunk.toString() })
-    proc.on('error', reject)
+    proc.on('error', (err) => {
+      if (settled) return
+      settled = true
+      clearTimeout(timer)
+      reject(err)
+    })
     proc.on('close', (code) => {
+      if (settled) return
+      settled = true
+      clearTimeout(timer)
       if (code === 0) {
         resolve(stdout)
         return
@@ -6350,6 +6393,7 @@ async function fetchConnectorLogo(rawUrl: string): Promise<{ contentType: string
 }
 
 const STREAM_EVENT_BUFFER_LIMIT = 400
+const READ_BUFFER_MAX_BYTES = 10 * 1024 * 1024
 
 type StreamEventFrame = {
   method: string
@@ -6449,6 +6493,9 @@ class AppServerProcess {
     proc.stdout.setEncoding('utf8')
     proc.stdout.on('data', (chunk: string) => {
       this.readBuffer += chunk
+      if (this.readBuffer.length > READ_BUFFER_MAX_BYTES) {
+        this.readBuffer = ''
+      }
 
       let lineEnd = this.readBuffer.indexOf('\n')
       while (lineEnd !== -1) {
@@ -6929,6 +6976,10 @@ class AppServerProcess {
     }
     this.pending.clear()
     this.pendingServerRequests.clear()
+    this.streamEventsByThreadId.clear()
+    this.lastThreadReadSnapshotByThreadId.clear()
+    this.capturedItemsByThreadId.clear()
+    this.liveStateCache.clear()
 
     try {
       proc.stdin.end()
@@ -6959,6 +7010,8 @@ export class BackendQueueProcessor {
   private readonly processingThreadIds = new Set<string>()
   private readonly queueDrainTimersByThreadId = new Map<string, ReturnType<typeof setTimeout>>()
   private readonly queueDrainDueAtByThreadId = new Map<string, number>()
+  private readonly queueRetryCountByTurnKey = new Map<string, number>()
+  private static readonly MAX_QUEUE_RETRIES = 3
   private readonly unsubscribe: () => void
 
   constructor(private readonly appServer: AppServerProcess) {
@@ -6971,6 +7024,10 @@ export class BackendQueueProcessor {
     void this.scheduleAllQueuedThreads(1000)
   }
 
+  private turnKey(turn: BackendQueuedTurn): string {
+    return `${turn.threadId}::${turn.message.id}`
+  }
+
   dispose(): void {
     this.unsubscribe()
     for (const timer of this.queueDrainTimersByThreadId.values()) {
@@ -6979,6 +7036,7 @@ export class BackendQueueProcessor {
     this.queueDrainTimersByThreadId.clear()
     this.queueDrainDueAtByThreadId.clear()
     this.processingThreadIds.clear()
+    this.queueRetryCountByTurnKey.clear()
   }
 
   async scheduleAllQueuedThreads(delayMs = 0): Promise<void> {
@@ -7029,12 +7087,20 @@ export class BackendQueueProcessor {
       if (!next) return
       try {
         await this.startQueuedTurn(next)
+        this.queueRetryCountByTurnKey.delete(this.turnKey(next))
         if (await this.hasQueuedTurns(threadId)) {
           this.scheduleThreadQueueDrain(threadId)
         }
       } catch {
-        await this.restoreQueuedTurn(next)
-        this.scheduleThreadQueueDrain(threadId)
+        const key = this.turnKey(next)
+        const retryCount = (this.queueRetryCountByTurnKey.get(key) ?? 0) + 1
+        if (retryCount > BackendQueueProcessor.MAX_QUEUE_RETRIES) {
+          this.queueRetryCountByTurnKey.delete(key)
+        } else {
+          this.queueRetryCountByTurnKey.set(key, retryCount)
+          await this.restoreQueuedTurn(next)
+          this.scheduleThreadQueueDrain(threadId)
+        }
       }
     } catch {
       // Queue processing is best-effort. Keep the bridge alive if app-server is unavailable.
@@ -7805,6 +7871,18 @@ export function createCodexBridgeMiddleware(): CodexBridgeMiddleware {
       }
 
       if (await handleReviewRoutes(req, res, url, { readJsonBody })) {
+        return
+      }
+
+      if (await handleSocketSecurityRoutes(req, res, url)) {
+        return
+      }
+
+      if (await handleSupabaseRoutes(req, res, url)) {
+        return
+      }
+
+      if (await handleSentinelRoutes(req, res, url)) {
         return
       }
 
