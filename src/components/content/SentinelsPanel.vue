@@ -860,4 +860,70 @@ onUnmounted(() => {
   background: color-mix(in srgb, currentColor 15%, transparent);
   border-radius: 3px;
 }
+
+/* ── Responsive / Mobile ── */
+@media (max-width: 768px) {
+  .sentinels-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .sentinels-header-right {
+    width: 100%;
+  }
+  .sentinels-mode-toggle {
+    width: 100%;
+    justify-content: center;
+  }
+  .sentinels-summary-bar {
+    flex-direction: column;
+    gap: 6px;
+  }
+  .sentinels-summary-item {
+    width: 100%;
+  }
+  .sentinels-agents-grid {
+    grid-template-columns: 1fr;
+  }
+  .sentinels-agent-footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .sentinels-agent-controls {
+    justify-content: flex-end;
+  }
+  .sentinels-alert-row {
+    flex-direction: column;
+    gap: 6px;
+  }
+  .sentinels-alert-ack {
+    align-self: flex-end;
+  }
+}
+
+@media (max-width: 480px) {
+  .sentinels-panel {
+    padding: 8px;
+  }
+  .sentinels-header-left {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .sentinels-title {
+    font-size: 18px;
+  }
+  .sentinels-agent-card {
+    border-radius: 8px;
+  }
+  .sentinels-agent-body {
+    padding: 10px;
+  }
+  .sentinels-alerts-header {
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+  }
+}
 </style>

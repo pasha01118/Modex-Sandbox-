@@ -48,80 +48,87 @@
             </button>
           </div>
 
-          <button
-            class="sidebar-skills-link"
-            :class="{ 'is-active': isSkillsRoute, 'is-collapsed': isSidebarCollapsed }"
-            type="button"
-            @click="router.push({ name: 'skills' }); isMobile && setSidebarCollapsed(true)"
-          >
-            <span class="sidebar-skills-link-icon" aria-hidden="true">
-              <IconTablerBolt />
-            </span>
-            <span v-if="!isSidebarCollapsed" class="sidebar-skills-link-copy">
-              <span class="sidebar-skills-link-title">{{ t('Skills') }}</span>
-              <span class="sidebar-skills-link-subtitle">{{ t('Plugins, apps, MCPs') }}</span>
-            </span>
-          </button>
+          <div v-if="!isSidebarCollapsed" class="sidebar-section-header" @click="isAdvancedExpanded = !isAdvancedExpanded">
+            <span class="sidebar-section-header-icon">{{ isAdvancedExpanded ? '▾' : '▸' }}</span>
+            <span class="sidebar-section-header-label">{{ t('Advanced') }}</span>
+          </div>
 
-          <button
-            class="sidebar-skills-link"
-            :class="{ 'is-active': isAutomationsRoute, 'is-collapsed': isSidebarCollapsed }"
-            type="button"
-            @click="router.push({ name: 'automations' }); isMobile && setSidebarCollapsed(true)"
-          >
-            <span class="sidebar-skills-link-icon sidebar-automations-link-icon" aria-hidden="true">
-              <IconTablerBolt />
-            </span>
-            <span v-if="!isSidebarCollapsed" class="sidebar-skills-link-copy">
-              <span class="sidebar-skills-link-title">{{ t('Automations') }}</span>
-              <span class="sidebar-skills-link-subtitle">{{ t('Scheduled work') }}</span>
-            </span>
-          </button>
+          <template v-if="isSidebarCollapsed || isAdvancedExpanded">
+            <button
+              class="sidebar-skills-link"
+              :class="{ 'is-active': isSkillsRoute, 'is-collapsed': isSidebarCollapsed }"
+              type="button"
+              @click="router.push({ name: 'skills' }); isMobile && setSidebarCollapsed(true)"
+            >
+              <span class="sidebar-skills-link-icon" aria-hidden="true">
+                <IconTablerBolt />
+              </span>
+              <span v-if="!isSidebarCollapsed" class="sidebar-skills-link-copy">
+                <span class="sidebar-skills-link-title">{{ t('Skills') }}</span>
+                <span class="sidebar-skills-link-subtitle">{{ t('Plugins, apps, MCPs') }}</span>
+              </span>
+            </button>
 
-          <button
-            class="sidebar-skills-link"
-            :class="{ 'is-active': isSocketSecurityRoute, 'is-collapsed': isSidebarCollapsed }"
-            type="button"
-            @click="router.push({ name: 'socket-security' }); isMobile && setSidebarCollapsed(true)"
-          >
-            <span class="sidebar-skills-link-icon sidebar-socket-link-icon" aria-hidden="true">
-              <IconTablerShieldCheck />
-            </span>
-            <span v-if="!isSidebarCollapsed" class="sidebar-skills-link-copy">
-              <span class="sidebar-skills-link-title">{{ t('Security') }}</span>
-              <span class="sidebar-skills-link-subtitle">{{ t('Package scanner') }}</span>
-            </span>
-          </button>
+            <button
+              class="sidebar-skills-link"
+              :class="{ 'is-active': isAutomationsRoute, 'is-collapsed': isSidebarCollapsed }"
+              type="button"
+              @click="router.push({ name: 'automations' }); isMobile && setSidebarCollapsed(true)"
+            >
+              <span class="sidebar-skills-link-icon sidebar-automations-link-icon" aria-hidden="true">
+                <IconTablerBolt />
+              </span>
+              <span v-if="!isSidebarCollapsed" class="sidebar-skills-link-copy">
+                <span class="sidebar-skills-link-title">{{ t('Automations') }}</span>
+                <span class="sidebar-skills-link-subtitle">{{ t('Scheduled work') }}</span>
+              </span>
+            </button>
 
-          <button
-            class="sidebar-skills-link"
-            :class="{ 'is-active': isSupabaseRoute, 'is-collapsed': isSidebarCollapsed }"
-            type="button"
-            @click="router.push({ name: 'supabase' }); isMobile && setSidebarCollapsed(true)"
-          >
-            <span class="sidebar-skills-link-icon sidebar-supabase-link-icon" aria-hidden="true">
-              <IconTablerDatabase />
-            </span>
-            <span v-if="!isSidebarCollapsed" class="sidebar-skills-link-copy">
-              <span class="sidebar-skills-link-title">{{ t('Supabase') }}</span>
-              <span class="sidebar-skills-link-subtitle">{{ t('Database, auth, storage') }}</span>
-            </span>
-          </button>
+            <button
+              class="sidebar-skills-link"
+              :class="{ 'is-active': isSocketSecurityRoute, 'is-collapsed': isSidebarCollapsed }"
+              type="button"
+              @click="router.push({ name: 'socket-security' }); isMobile && setSidebarCollapsed(true)"
+            >
+              <span class="sidebar-skills-link-icon sidebar-socket-link-icon" aria-hidden="true">
+                <IconTablerShieldCheck />
+              </span>
+              <span v-if="!isSidebarCollapsed" class="sidebar-skills-link-copy">
+                <span class="sidebar-skills-link-title">{{ t('Security') }}</span>
+                <span class="sidebar-skills-link-subtitle">{{ t('Package scanner') }}</span>
+              </span>
+            </button>
 
-          <button
-            class="sidebar-skills-link"
-            :class="{ 'is-active': isSentinelsRoute, 'is-collapsed': isSidebarCollapsed }"
-            type="button"
-            @click="router.push({ name: 'sentinels' }); isMobile && setSidebarCollapsed(true)"
-          >
-            <span class="sidebar-skills-link-icon sidebar-sentinels-link-icon" aria-hidden="true">
-              <IconTablerShieldScan />
-            </span>
-            <span v-if="!isSidebarCollapsed" class="sidebar-skills-link-copy">
-              <span class="sidebar-skills-link-title">{{ t('Sentinels') }}</span>
-              <span class="sidebar-skills-link-subtitle">{{ t('Security monitoring') }}</span>
-            </span>
-          </button>
+            <button
+              class="sidebar-skills-link"
+              :class="{ 'is-active': isSupabaseRoute, 'is-collapsed': isSidebarCollapsed }"
+              type="button"
+              @click="router.push({ name: 'supabase' }); isMobile && setSidebarCollapsed(true)"
+            >
+              <span class="sidebar-skills-link-icon sidebar-supabase-link-icon" aria-hidden="true">
+                <IconTablerDatabase />
+              </span>
+              <span v-if="!isSidebarCollapsed" class="sidebar-skills-link-copy">
+                <span class="sidebar-skills-link-title">{{ t('Supabase') }}</span>
+                <span class="sidebar-skills-link-subtitle">{{ t('Database, auth, storage') }}</span>
+              </span>
+            </button>
+
+            <button
+              class="sidebar-skills-link"
+              :class="{ 'is-active': isSentinelsRoute, 'is-collapsed': isSidebarCollapsed }"
+              type="button"
+              @click="router.push({ name: 'sentinels' }); isMobile && setSidebarCollapsed(true)"
+            >
+              <span class="sidebar-skills-link-icon sidebar-sentinels-link-icon" aria-hidden="true">
+                <IconTablerShieldScan />
+              </span>
+              <span v-if="!isSidebarCollapsed" class="sidebar-skills-link-copy">
+                <span class="sidebar-skills-link-title">{{ t('Sentinels') }}</span>
+                <span class="sidebar-skills-link-subtitle">{{ t('Security monitoring') }}</span>
+              </span>
+            </button>
+          </template>
 
           <SidebarThreadTree ref="sidebarThreadTreeRef" :groups="projectGroups" :project-display-name-by-id="projectDisplayNameById"
             :project-git-repo-by-name="projectGitRepoByName"
@@ -1614,6 +1621,7 @@ const worktreeInitStatus = ref<{ phase: 'idle' | 'running' | 'error'; title: str
   message: '',
 })
 const isSidebarCollapsed = ref(loadSidebarCollapsed())
+const isAdvancedExpanded = ref(true)
 const sidebarSearchQuery = ref('')
 const isSidebarSearchVisible = ref(false)
 const sidebarScrollableRef = ref<HTMLElement | null>(null)
@@ -5110,6 +5118,18 @@ async function loadWorktreeBranches(sourceCwd: string): Promise<void> {
 
 .sidebar-search-clear-icon {
   @apply w-3.5 h-3.5;
+}
+
+.sidebar-section-header {
+  @apply mx-3 flex items-center gap-2 px-2 py-1.5 mt-2 mb-0.5 rounded-lg text-[11px] font-semibold uppercase tracking-[0.12em] text-zinc-400 cursor-pointer select-none transition hover:text-zinc-600 hover:bg-zinc-100/50;
+}
+
+:global(:root.dark) .sidebar-section-header {
+  @apply text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/30;
+}
+
+.sidebar-section-header-icon {
+  @apply text-[10px] w-4 text-center shrink-0 opacity-60;
 }
 
 .sidebar-skills-link {
