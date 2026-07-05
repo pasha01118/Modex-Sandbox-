@@ -116,9 +116,9 @@
 
             <button
               class="sidebar-skills-link"
-              :class="{ 'is-active': isSentinelsRoute, 'is-collapsed': isSidebarCollapsed }"
+              :class="{ 'is-active': isSentinelsRoute || showSentinelsPanel, 'is-collapsed': isSidebarCollapsed }"
               type="button"
-              @click="router.push({ name: 'sentinels' }); isMobile && setSidebarCollapsed(true)"
+              @click="showSentinelsPanel = !showSentinelsPanel; router.push({ name: 'sentinels' }); isMobile && setSidebarCollapsed(true)"
             >
               <span class="sidebar-skills-link-icon sidebar-sentinels-link-icon" aria-hidden="true">
                 <IconTablerShieldScan />
@@ -1122,6 +1122,18 @@
       </section>
     </template>
   </DesktopLayout>
+  <Teleport to="body">
+    <Transition name="drawer">
+      <div v-if="showSentinelsPanel" class="sentinels-overlay-backdrop" @click="showSentinelsPanel = false">
+        <div class="sentinels-overlay-panel" @click.stop>
+          <button class="sentinels-overlay-close" type="button" @click="showSentinelsPanel = false" aria-label="Close">
+            <IconTablerX />
+          </button>
+          <SentinelsPanel />
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
   <div v-if="projectZipExportStatus.phase !== 'idle'" class="project-zip-modal-backdrop" role="presentation">
     <div class="project-zip-modal" role="dialog" aria-modal="true" :aria-label="t('Export Project')" @click.stop>
       <div class="project-zip-modal-header">
@@ -1622,6 +1634,7 @@ const worktreeInitStatus = ref<{ phase: 'idle' | 'running' | 'error'; title: str
 })
 const isSidebarCollapsed = ref(loadSidebarCollapsed())
 const isAdvancedExpanded = ref(true)
+const showSentinelsPanel = ref(false)
 const sidebarSearchQuery = ref('')
 const isSidebarSearchVisible = ref(false)
 const sidebarScrollableRef = ref<HTMLElement | null>(null)
@@ -6250,6 +6263,29 @@ async function loadWorktreeBranches(sourceCwd: string): Promise<void> {
 
 .sidebar-settings-build-label {
   @apply border-t border-zinc-100 px-3 py-2 text-[11px] text-zinc-500;
+}
+
+.sentinels-overlay-backdrop {
+  position: fixed; inset: 0; z-index: 9999;
+  background: rgba(0,0,0,0.5);
+  display: flex; align-items: center; justify-content: center;
+}
+.sentinels-overlay-panel {
+  position: relative;
+  width: min(90vw, 800px);
+  max-height: 85vh; overflow-y: auto;
+  background: var(--bg, #fff);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+:root.dark .sentinels-overlay-panel {
+  background: #1a1a2e;
+}
+.sentinels-overlay-close {
+  position: absolute; top: 12px; right: 12px;
+  background: none; border: none; cursor: pointer;
+  color: inherit; padding: 4px;
 }
 
 </style>
