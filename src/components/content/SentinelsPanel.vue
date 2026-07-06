@@ -56,45 +56,37 @@
         class="sentinels-agent-card"
         :class="'sentinels-agent--' + agent.status"
       >
-        <div class="sentinels-agent-led-strip">
-          <span class="sentinels-agent-led" :class="'sentinels-led--' + agent.status" />
-          <span class="sentinels-agent-status-label">{{ agent.status }}</span>
-        </div>
+        <span class="sentinels-agent-led" :class="'sentinels-led--' + agent.status" />
         <div class="sentinels-agent-body">
           <div class="sentinels-agent-header">
             <h3 class="sentinels-agent-name">{{ agent.name }}</h3>
-            <span class="sentinels-agent-alert-count" :class="{ 'has-alerts': agent.alertCount > 0 }">
-              {{ agent.alertCount }} alerts
+            <span class="sentinels-agent-tag" :class="'sentinels-tag--' + agent.status">
+              {{ agent.status }}
             </span>
           </div>
           <p class="sentinels-agent-desc">{{ agent.description }}</p>
-          <div class="sentinels-agent-footer">
-            <div class="sentinels-agent-time">
-              <span v-if="agent.lastTriggered" class="sentinels-agent-last">
-                Last trigger: {{ formatTime(agent.lastTriggered) }}
-              </span>
-              <span v-else class="sentinels-agent-last sentinels-agent-never">No triggers</span>
-            </div>
-            <div class="sentinels-agent-controls">
-              <button
-                class="sentinels-agent-toggle"
-                :class="{ 'is-enabled': agent.enabled }"
-                :aria-label="(agent.enabled ? 'Disable' : 'Enable') + ' ' + agent.name"
-                @click="onToggleAgent(agent.id, !agent.enabled)"
-              >
-                {{ agent.enabled ? 'Enabled' : 'Disabled' }}
-              </button>
-              <button
-                v-if="masterMode === 'auto'"
-                class="sentinels-agent-mode-btn"
-                :class="'sentinels-mode--' + agent.mode"
-                :aria-label="'Set ' + agent.name + ' to ' + (agent.mode === 'auto' ? 'manual' : 'auto')"
-                @click="onSetAgentMode(agent.id, agent.mode === 'auto' ? 'manual' : 'auto')"
-              >
-                {{ agent.mode === 'auto' ? 'Auto' : 'Manual' }}
-              </button>
-            </div>
-          </div>
+        </div>
+        <div class="sentinels-agent-controls">
+          <button
+            class="sentinels-agent-toggle"
+            :class="{ 'is-enabled': agent.enabled }"
+            :aria-label="(agent.enabled ? 'Disable' : 'Enable') + ' ' + agent.name"
+            @click="onToggleAgent(agent.id, !agent.enabled)"
+          >
+            {{ agent.enabled ? 'Enabled' : 'Disabled' }}
+          </button>
+          <button
+            v-if="masterMode === 'auto'"
+            class="sentinels-agent-mode-btn"
+            :class="'sentinels-mode--' + agent.mode"
+            :aria-label="'Set ' + agent.name + ' to ' + (agent.mode === 'auto' ? 'manual' : 'auto')"
+            @click="onSetAgentMode(agent.id, agent.mode === 'auto' ? 'manual' : 'auto')"
+          >
+            {{ agent.mode === 'auto' ? 'Auto' : 'Manual' }}
+          </button>
+          <span v-if="agent.alertCount > 0" class="sentinels-agent-badge">
+            {{ agent.alertCount }}
+          </span>
         </div>
       </div>
     </div>
@@ -469,16 +461,19 @@ onUnmounted(() => {
 
 /* Agents Grid */
 .sentinels-agents-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-  gap: 14px;
-  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 20px;
 }
 
-/* Agent Card */
+/* Agent Card - compact horizontal rectangle */
 .sentinels-agent-card {
-  border-radius: 10px;
-  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 8px;
   border: 1px solid color-mix(in srgb, currentColor 12%, transparent);
   background: color-mix(in srgb, currentColor 3%, transparent);
   transition: border-color 0.3s, box-shadow 0.3s;
@@ -486,21 +481,12 @@ onUnmounted(() => {
 
 .sentinels-agent--alert {
   border-color: #ef4444;
-  box-shadow: 0 0 12px color-mix(in srgb, #ef4444 20%, transparent);
+  box-shadow: 0 0 10px color-mix(in srgb, #ef4444 15%, transparent);
 }
 
 .sentinels-agent--error {
   border-color: #f59e0b;
-  box-shadow: 0 0 12px color-mix(in srgb, #f59e0b 15%, transparent);
-}
-
-.sentinels-agent-led-strip {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 14px;
-  background: color-mix(in srgb, currentColor 5%, transparent);
-  border-bottom: 1px solid color-mix(in srgb, currentColor 8%, transparent);
+  box-shadow: 0 0 10px color-mix(in srgb, #f59e0b 12%, transparent);
 }
 
 .sentinels-agent-led {
@@ -538,66 +524,61 @@ onUnmounted(() => {
   50% { opacity: 0.5; }
 }
 
-.sentinels-agent-status-label {
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  opacity: 0.6;
-}
-
 .sentinels-agent-body {
-  padding: 14px;
+  flex: 1;
+  min-width: 0;
 }
 
 .sentinels-agent-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-bottom: 6px;
+  gap: 8px;
+  margin-bottom: 2px;
 }
 
 .sentinels-agent-name {
   margin: 0;
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 600;
 }
 
-.sentinels-agent-alert-count {
-  font-size: 11px;
-  padding: 2px 8px;
-  border-radius: 10px;
-  background: color-mix(in srgb, currentColor 8%, transparent);
-  color: inherit;
-  opacity: 0.7;
+.sentinels-agent-tag {
+  font-size: 9px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.sentinels-agent-alert-count.has-alerts {
-  background: color-mix(in srgb, #ef4444 20%, transparent);
+.sentinels-tag--idle {
+  background: color-mix(in srgb, #6b7280 15%, transparent);
+  color: #6b7280;
+}
+
+.sentinels-tag--monitoring {
+  background: color-mix(in srgb, #22c55e 15%, transparent);
+  color: #22c55e;
+}
+
+.sentinels-tag--alert {
+  background: color-mix(in srgb, #ef4444 15%, transparent);
   color: #ef4444;
-  opacity: 1;
+}
+
+.sentinels-tag--error {
+  background: color-mix(in srgb, #f59e0b 15%, transparent);
+  color: #f59e0b;
 }
 
 .sentinels-agent-desc {
-  margin: 0 0 10px;
-  font-size: 12px;
-  line-height: 1.5;
-  opacity: 0.65;
-}
-
-.sentinels-agent-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.sentinels-agent-time {
+  margin: 0;
   font-size: 11px;
-  opacity: 0.5;
-}
-
-.sentinels-agent-never {
-  font-style: italic;
+  opacity: 0.6;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .sentinels-agent-controls {
@@ -605,6 +586,20 @@ onUnmounted(() => {
   align-items: center;
   gap: 6px;
   flex-shrink: 0;
+}
+
+.sentinels-agent-badge {
+  font-size: 10px;
+  font-weight: 700;
+  min-width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+  background: color-mix(in srgb, #ef4444 20%, transparent);
+  color: #ef4444;
+  padding: 0 5px;
 }
 
 .sentinels-agent-toggle {
@@ -882,16 +877,14 @@ onUnmounted(() => {
   .sentinels-summary-item {
     width: 100%;
   }
-  .sentinels-agents-grid {
-    grid-template-columns: 1fr;
-  }
-  .sentinels-agent-footer {
-    flex-direction: column;
-    align-items: stretch;
+  .sentinels-agent-card {
+    flex-wrap: wrap;
     gap: 8px;
   }
   .sentinels-agent-controls {
-    justify-content: flex-end;
+    margin-left: 22px;
+    width: calc(100% - 22px);
+    justify-content: flex-start;
   }
   .sentinels-alert-row {
     flex-direction: column;
@@ -915,10 +908,8 @@ onUnmounted(() => {
     font-size: 18px;
   }
   .sentinels-agent-card {
-    border-radius: 8px;
-  }
-  .sentinels-agent-body {
-    padding: 10px;
+    border-radius: 6px;
+    padding: 8px 10px;
   }
   .sentinels-alerts-header {
     flex-direction: column;
