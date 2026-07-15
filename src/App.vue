@@ -1,8 +1,9 @@
 <template>
-  <DesktopLayout :is-sidebar-collapsed="isSidebarCollapsed" @close-sidebar="setSidebarCollapsed(true)">
-    <template #sidebar>
-      <section class="sidebar-root">
-        <div
+  <template v-if="!isMobile">
+    <DesktopLayout :is-sidebar-collapsed="isSidebarCollapsed" @close-sidebar="setSidebarCollapsed(true)">
+      <template #sidebar>
+        <section class="sidebar-root">
+          <div
           ref="sidebarScrollableRef"
           class="sidebar-scrollable"
           @scroll="onSidebarScroll"
@@ -1122,7 +1123,576 @@
       </section>
     </template>
   </DesktopLayout>
-  <Teleport to="body">
+</template>
+<template v-else>
+  <MobileLayout>
+    <section
+      class="content-root mobile-content-root"
+      :class="{
+        'is-virtual-keyboard-open': isTerminalKeyboardLayoutActive,
+        'is-terminal-open': isComposerTerminalOpen,
+      }"
+      :style="contentStyle"
+    >
+      <span v-if="isVirtualKeyboardOpen" class="content-keyboard-spacer" aria-hidden="true" />
+      <ContentHeader :title="contentTitle" :accent="isSkillsRoute || isAutomationsRoute || isSocketSecurityRoute || isSupabaseRoute || isSentinelsRoute">
+        <template #leading>
+          <SidebarThreadControls
+            v-if="isSidebarCollapsed || isMobile"
+            class="sidebar-thread-controls-header-host"
+            :is-sidebar-collapsed="isSidebarCollapsed"
+            :show-new-thread-button="true"
+            @toggle-sidebar="setSidebarCollapsed(!isSidebarCollapsed)"
+            @start-new-thread="onStartNewThreadFromToolbar"
+          />
+          <span v-if="isSkillsRoute" class="skills-route-header-icon" aria-hidden="true">
+            <IconTablerBolt />
+          </span>
+          <span v-else-if="isAutomationsRoute" class="skills-route-header-icon automations-route-header-icon" aria-hidden="true">
+            <IconTablerBolt />
+          </span>
+          <span v-else-if="isSocketSecurityRoute" class="skills-route-header-icon socket-route-header-icon" aria-hidden="true">
+            <IconTablerShieldCheck />
+          </span>
+          <span v-else-if="isSupabaseRoute" class="skills-route-header-icon supabase-route-header-icon" aria-hidden="true">
+            <IconTablerDatabase />
+          </span>
+          <span v-else-if="isSentinelsRoute" class="skills-route-header-icon sentinels-route-header-icon" aria-hidden="true">
+            <IconTablerShieldScan />
+          </span>
+        </template>
+        <template #actions>
+          <ComposerDropdown
+            v-if="canShowTerminalToggle"
+            class="content-header-terminal-command"
+            :class="{ 'is-open': isComposerTerminalOpen }"
+            :model-value="terminalHeaderDropdownValue"
+            :options="terminalHeaderDropdownOptions"
+            :placeholder="terminalCommandPlaceholder"
+            :selected-prefix-icon="IconTablerTerminal"
+            :icon-only="true"
+            menu-align="end"
+            :empty-label="t('No commands')"
+            @update:model-value="onSelectHeaderTerminalCommand"
+          />
+          <HeaderGitBranchDropdown
+            v-if="canShowContentHeaderBranchDropdown"
+            class="content-header-branch-dropdown"
+            :current-branch="currentThreadBranch"
+            :head-sha="currentThreadHeadSha"
+            :head-subject="currentThreadHeadSubject"
+            :head-date="currentThreadHeadDate"
+            :detached="isThreadDetachedHead"
+            :dirty="isThreadWorktreeDirty"
+            :worktree-change-summary="threadWorktreeChangeSummary"
+            :branches="threadBranchOptions"
+            :commits-by-branch="threadBranchCommitsByBranch"
+            :commits-loading-for="threadBranchCommitsLoadingFor"
+            :commits-error="threadBranchCommitsError"
+            :commit-files-by-sha="threadCommitFilesBySha"
+            :commit-files-loading-for="threadCommitFilesLoadingFor"
+            :commit-files-error="threadCommitFilesError"
+            :loading="isLoadingThreadBranches"
+            :busy="isSwitchingThreadBranch"
+            :error="threadBranchError"
+            :review-open="isReviewPaneOpen"
+            :show-review="route.name === 'thread' && selectedThreadId.length > 0"
+            @toggle-review="onToggleContentHeaderReview"
+            @checkout-branch="onCheckoutContentHeaderBranch"
+            @reset-branch-to-commit="onResetContentHeaderBranchToCommit"
+            @load-commits="loadThreadBranchCommits"
+            @load-commit-files="loadThreadCommitFiles"
+            @open-commit-file="onOpenContentHeaderCommitFile"
+          />
+        </template>
+      </ContentHeader>
+
+      <section class="content-body">
+        <template v-if="isSkillsRoute">
+          <DirectoryHub
+            :cwd="directoryCwd"
+            :thread-id="routeThreadId"
+            :try-in-flight-key="directoryTryInFlightKey"
+            @skills-changed="onSkillsChanged"
+            @try-item="onTryDirectoryItem"
+          />
+        </template>
+        <template v-else-if="isAutomationsRoute">
+          <AutomationsPanel
+            ref="automationsPanelRef"
+            :groups="projectGroups"
+            :project-cwd-by-name="projectCwdByName"
+            :project-display-name-by-id="projectDisplayNameById"
+            :selected-automation-id="routeAutomationId"
+            @select-automation="onSelectAutomationInPanel"
+            @edit-automation="onEditAutomationFromPanel"
+            @create-automation="onCreateAutomationFromPanel"
+          />
+        </template>
+        <template v-else-if="isSocketSecurityRoute">
+          <SocketSecurityPanel />
+        </template>
+        <template v-else-if="isSupabaseRoute">
+          <SupabasePanel />
+        </template>
+        <template v-else-if="isSentinelsRoute">
+          <SentinelsPanel />
+        </template>
+        <template v-else-if="isHomeRoute">
+          <div class="content-grid content-grid-home">
+            <div class="new-thread-empty">
+              <p class="new-thread-hero">{{ t("Let's build") }}</p>
+              <ComposerDropdown class="new-thread-folder-dropdown" :model-value="newThreadCwd"
+                :options="newThreadFolderOptions" :placeholder="t('Choose folder')"
+                :enable-search="true"
+                :search-placeholder="t('Quick search project')"
+                :disabled="false" @update:model-value="onSelectNewThreadFolder" />
+              <p v-if="newThreadCwd" class="new-thread-folder-selected" :title="newThreadCwd">
+                {{ t('Selected folder') }}: {{ newThreadCwd }}
+              </p>
+              <div class="new-thread-folder-actions">
+                <button class="new-thread-folder-action new-thread-folder-action-primary" type="button" @click="onOpenExistingFolder">
+                  {{ t('Select folder') }}
+                </button>
+                <button class="new-thread-folder-action" type="button" @click="onOpenProjectSetupModal">
+                  {{ t('Create Project') }}
+                </button>
+                <button class="new-thread-folder-action" type="button" :disabled="isProjectImporting" @click="onChooseProjectImportZip">
+                  {{ isProjectImporting ? t('Importing…') : t('Import Project') }}
+                </button>
+                <input
+                  ref="projectImportInputRef"
+                  class="new-thread-project-import-input"
+                  type="file"
+                  accept=".zip,application/zip"
+                  tabindex="-1"
+                  aria-hidden="true"
+                  @change="onDirectProjectImportFileChange"
+                />
+              </div>
+              <section v-if="showFirstLaunchPluginsCard" class="new-thread-launch-card" aria-label="Plugins and Apps announcement">
+                <div class="new-thread-launch-card-copy">
+                  <div class="new-thread-launch-card-topline">
+                    <span class="new-thread-launch-card-badge" aria-hidden="true">
+                      <IconTablerBolt />
+                    </span>
+                    <p class="new-thread-launch-card-eyebrow">{{ t('New in Codex') }}</p>
+                  </div>
+                  <h2 class="new-thread-launch-card-title">{{ t('Plugins are here') }}</h2>
+                  <p class="new-thread-launch-card-text">
+                    {{ t('Hook Codex up to Gmail, Calendar, GitHub, Slack, Browser Use, and more so it can actually help with real work right away.') }}
+                  </p>
+                  <div class="new-thread-launch-card-pills" aria-label="Example integrations">
+                    <span class="new-thread-launch-card-pill">Gmail</span>
+                    <span class="new-thread-launch-card-pill">Calendar</span>
+                    <span class="new-thread-launch-card-pill">GitHub</span>
+                    <span class="new-thread-launch-card-pill">Slack</span>
+                    <span class="new-thread-launch-card-pill">Browser Use</span>
+                  </div>
+                </div>
+                <div class="new-thread-launch-card-actions">
+                  <button class="new-thread-launch-card-button new-thread-launch-card-button-primary" type="button" @click="onOpenPluginsHomeCard">
+                    {{ t('Explore Plugins & Apps') }}
+                  </button>
+                  <button class="new-thread-launch-card-button" type="button" @click="dismissFirstLaunchPluginsCard">
+                    {{ t('Dismiss') }}
+                  </button>
+                </div>
+              </section>
+              <Teleport to="body">
+                <div v-if="isExistingFolderPickerOpen" class="new-thread-open-folder-overlay" @click.self="onCloseExistingFolderPanel">
+                  <div class="new-thread-open-folder" role="dialog" aria-modal="true" :aria-label="t('Select folder')" @keydown.esc.prevent="onCloseExistingFolderPanel">
+                    <div class="new-thread-open-folder-header">
+                      <p class="new-thread-open-folder-title">{{ t('Select folder') }}</p>
+                      <button class="new-thread-open-folder-close" type="button" @click="onCloseExistingFolderPanel">
+                        {{ t('Cancel') }}
+                      </button>
+                    </div>
+                    <p class="new-thread-open-folder-label">{{ t('Current folder') }}</p>
+                    <div class="new-thread-open-folder-current">
+                      <input
+                        ref="existingFolderPathInputRef"
+                        v-model="existingFolderPathDraft"
+                        class="new-thread-open-folder-path"
+                        type="text"
+                        :placeholder="t('Current folder')"
+                        :title="existingFolderPathDraft || t('Unavailable')"
+                        :disabled="isExistingFolderLoading || isOpeningExistingFolder"
+                        @blur="onExistingFolderPathBlur"
+                        @keydown.enter.prevent="onSubmitExistingFolderPath"
+                        @keydown.esc.prevent="onCloseExistingFolderPanel"
+                      />
+                      <button
+                        class="new-thread-folder-action new-thread-folder-action-primary"
+                        type="button"
+                        :disabled="!resolvedExistingFolderPath || isExistingFolderLoading || isOpeningExistingFolder"
+                        @click="onConfirmExistingFolder()"
+                      >
+                        {{ isOpeningExistingFolder ? t('Opening…') : t('Open') }}
+                      </button>
+                    </div>
+                    <div class="new-thread-open-folder-actions">
+                      <label class="new-thread-open-folder-toggle">
+                        <input
+                          v-model="showHiddenFolders"
+                          class="new-thread-open-folder-toggle-input"
+                          type="checkbox"
+                          @change="onToggleHiddenFolders"
+                        />
+                        <span>{{ t('Show hidden folders') }}</span>
+                      </label>
+                      <button
+                        class="new-thread-folder-action"
+                        :class="{ 'new-thread-folder-action-primary': isCreateFolderOpen }"
+                        type="button"
+                        :aria-pressed="isCreateFolderOpen"
+                        :disabled="!existingFolderBrowsePath || isExistingFolderLoading || isOpeningExistingFolder || isCreatingFolder || (!!existingFolderError && !isCreateFolderOpen)"
+                        @click="onOpenCreateFolderPanel"
+                      >
+                        {{ t('New folder') }}
+                      </button>
+                    </div>
+                    <div v-if="isCreateFolderOpen" class="new-thread-open-folder-create">
+                      <div class="new-thread-open-folder-create-composer">
+                        <input
+                          ref="createFolderInputRef"
+                          v-model="createFolderDraft"
+                          class="new-thread-open-folder-create-input"
+                          type="text"
+                          :placeholder="t('Folder name')"
+                          @keydown.enter.prevent="onCreateFolder"
+                          @keydown.esc.prevent="onCloseCreateFolderPanel"
+                        />
+                        <button
+                          class="new-thread-folder-action new-thread-folder-action-primary new-thread-open-folder-create-submit"
+                          type="button"
+                          :disabled="!canCreateFolder || isCreatingFolder"
+                          @click="onCreateFolder"
+                        >
+                          {{ createFolderSubmitLabel }}
+                        </button>
+                      </div>
+                      <div v-if="createFolderError" class="new-thread-open-folder-error visible-error-with-feedback">
+                        <span>{{ createFolderError }}</span>
+                        <a class="visible-error-feedback" :href="feedbackMailto" @click="prepareFeedbackLink($event, createFolderError)">{{ t('Send feedback') }}</a>
+                      </div>
+                    </div>
+                    <input
+                      ref="existingFolderFilterInputRef"
+                      v-model="existingFolderFilter"
+                      class="new-thread-open-folder-filter"
+                      type="text"
+                      :placeholder="t('Filter folders...')"
+                      @keydown.esc.prevent="onCloseExistingFolderPanel"
+                    />
+                    <div v-if="existingFolderError" class="new-thread-open-folder-error-actions">
+                      <div class="new-thread-open-folder-error visible-error-with-feedback">
+                        <span>{{ existingFolderError }}</span>
+                        <a class="visible-error-feedback" :href="feedbackMailto" @click="prepareFeedbackLink($event, existingFolderError)">{{ t('Send feedback') }}</a>
+                      </div>
+                      <button
+                        class="new-thread-folder-action"
+                        type="button"
+                        :disabled="isExistingFolderLoading || isOpeningExistingFolder"
+                        @click="onRetryExistingFolderBrowse"
+                      >
+                        {{ t('Retry') }}
+                      </button>
+                    </div>
+                    <p v-if="isExistingFolderLoading" class="new-thread-open-folder-status">{{ t('Loading folders…') }}</p>
+                    <p v-else-if="!existingFolderError && existingFolderFilteredEntries.length === 0" class="new-thread-open-folder-status">
+                      {{ existingFolderFilter.trim() ? t('No folders match this filter.') : t('No subfolders found here.') }}
+                    </p>
+                    <ul v-else-if="existingFolderFilteredEntries.length > 0" class="new-thread-open-folder-list">
+                      <li v-for="entry in existingFolderFilteredEntries" :key="entry.key" class="new-thread-open-folder-item">
+                        <button
+                          class="new-thread-open-folder-item-main"
+                          type="button"
+                          :title="entry.path"
+                          :disabled="isExistingFolderLoading || isOpeningExistingFolder"
+                          @click="onBrowseExistingFolder(entry.path)"
+                        >
+                          <span class="new-thread-open-folder-item-name">{{ entry.name }}</span>
+                        </button>
+                        <button
+                          v-if="entry.kind === 'directory'"
+                          class="new-thread-open-folder-item-open"
+                          type="button"
+                          :disabled="isExistingFolderLoading || isOpeningExistingFolder"
+                          @click="onConfirmExistingFolder(entry.path)"
+                        >
+                          {{ t('Open') }}
+                        </button>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </Teleport>
+              <Teleport to="body">
+                <div v-if="isProjectSetupModalOpen" class="new-thread-open-folder-overlay" @click.self="onCloseProjectSetupModal">
+                  <div class="new-thread-project-modal" role="dialog" aria-modal="true" :aria-label="t('Create or clone project')" @keydown.esc.prevent="onCloseProjectSetupModal">
+                    <div class="new-thread-open-folder-header">
+                      <p class="new-thread-open-folder-title">{{ t('Create or clone project') }}</p>
+                      <button class="new-thread-open-folder-close" type="button" :disabled="isProjectSetupSubmitting" @click="onCloseProjectSetupModal">
+                        {{ t('Cancel') }}
+                      </button>
+                    </div>
+                    <div class="new-thread-project-mode-tabs" role="tablist" :aria-label="t('Project source')">
+                      <button
+                        class="new-thread-project-mode-tab"
+                        :class="{ 'is-active': projectSetupMode === 'create' }"
+                        type="button"
+                        role="tab"
+                        :aria-selected="projectSetupMode === 'create'"
+                        :disabled="isProjectSetupSubmitting"
+                        @click="projectSetupMode = 'create'"
+                      >
+                        {{ t('New project') }}
+                      </button>
+                      <button
+                        class="new-thread-project-mode-tab"
+                        :class="{ 'is-active': projectSetupMode === 'clone' }"
+                        type="button"
+                        role="tab"
+                        :aria-selected="projectSetupMode === 'clone'"
+                        :disabled="isProjectSetupSubmitting"
+                        @click="projectSetupMode = 'clone'"
+                      >
+                        {{ t('Clone from GitHub') }}
+                      </button>
+                    </div>
+                    <label class="new-thread-project-field">
+                      <span class="new-thread-open-folder-label">{{ t('Destination folder') }}</span>
+                      <input
+                        v-model="projectSetupBaseDir"
+                        class="new-thread-open-folder-path"
+                        type="text"
+                        :disabled="isProjectSetupSubmitting"
+                        :placeholder="t('Destination folder')"
+                      />
+                    </label>
+                    <label v-if="projectSetupMode === 'create'" class="new-thread-project-field">
+                      <span class="new-thread-open-folder-label">{{ t('Project name') }}</span>
+                      <input
+                        ref="projectSetupPrimaryInputRef"
+                        v-model="projectNameDraft"
+                        class="new-thread-open-folder-create-input"
+                        type="text"
+                        :disabled="isProjectSetupSubmitting"
+                        :placeholder="t('Project name')"
+                        @keydown.enter.prevent="onSubmitProjectSetup"
+                      />
+                    </label>
+                    <label v-else-if="projectSetupMode === 'clone'" class="new-thread-project-field">
+                      <span class="new-thread-open-folder-label">{{ t('GitHub repository URL') }}</span>
+                      <input
+                        ref="projectSetupPrimaryInputRef"
+                        v-model="githubCloneUrlDraft"
+                        class="new-thread-open-folder-create-input"
+                        type="url"
+                        :disabled="isProjectSetupSubmitting"
+                        placeholder="https://github.com/owner/repo"
+                        @keydown.enter.prevent="onSubmitProjectSetup"
+                      />
+                    </label>
+                    <div v-if="projectSetupError" class="new-thread-open-folder-error visible-error-with-feedback">
+                      <span>{{ projectSetupError }}</span>
+                      <a class="visible-error-feedback" :href="feedbackMailto" @click="prepareFeedbackLink($event, projectSetupError)">{{ t('Send feedback') }}</a>
+                    </div>
+                    <div class="new-thread-project-modal-actions">
+                      <button class="new-thread-folder-action" type="button" :disabled="isProjectSetupSubmitting" @click="onCloseProjectSetupModal">
+                        {{ t('Cancel') }}
+                      </button>
+                      <button
+                        class="new-thread-folder-action new-thread-folder-action-primary"
+                        type="button"
+                        :disabled="!canSubmitProjectSetup || isProjectSetupSubmitting"
+                        @click="onSubmitProjectSetup"
+                      >
+                        {{ projectSetupSubmitLabel }}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </Teleport>
+              <ComposerRuntimeDropdown
+                v-if="isNewThreadCwdGitRepo"
+                class="new-thread-runtime-dropdown"
+                v-model="newThreadRuntime"
+              />
+              <div v-if="newThreadRuntime === 'worktree'" class="new-thread-branch-select">
+                <p class="new-thread-branch-select-label">{{ t('Base branch') }}</p>
+                <ComposerDropdown
+                  class="new-thread-branch-dropdown"
+                  :model-value="newWorktreeBaseBranch"
+                  :options="newWorktreeBranchDropdownOptions"
+                  :placeholder="t('Select branch')"
+                  :enable-search="true"
+                  :search-placeholder="t('Search branches...')"
+                  :disabled="isLoadingWorktreeBranches || newWorktreeBranchDropdownOptions.length === 0"
+                  @update:model-value="onSelectNewWorktreeBranch"
+                />
+                <p class="new-thread-branch-select-help">
+                  {{
+                    isLoadingWorktreeBranches
+                      ? t('Loading branches…')
+                      : selectedWorktreeBranchLabel
+                        ? t('New worktree branch will start from {branch}.', { branch: selectedWorktreeBranchLabel })
+                        : t('No Git branches found for this folder.')
+                  }}
+                </p>
+              </div>
+              <p v-if="isNewThreadCwdGitRepo" class="new-thread-runtime-help">
+                {{ t('Local project uses the selected folder directly. New worktree creates an isolated Git worktree before the first prompt.') }}
+              </p>
+              <div
+                v-if="worktreeInitStatus.phase !== 'idle'"
+                class="worktree-init-status"
+                :class="{
+                  'is-running': worktreeInitStatus.phase === 'running',
+                  'is-error': worktreeInitStatus.phase === 'error',
+                }"
+              >
+                <strong class="worktree-init-status-title">{{ worktreeInitStatus.title }}</strong>
+                <span class="worktree-init-status-message">{{ worktreeInitStatus.message }}</span>
+              </div>
+            </div>
+
+            <div class="composer-with-queue">
+              <div v-if="codexCliMissingError" class="composer-runtime-error" role="alert">
+                <span>{{ t(codexCliMissingError) }}</span>
+                <a class="visible-error-feedback" :href="feedbackMailto" @click="prepareFeedbackLink($event, codexCliMissingError)">{{ t('Send feedback') }}</a>
+              </div>
+              <ThreadTerminalPanel
+                v-if="homeTerminalOpen && composerCwd"
+                ref="homeTerminalPanelRef"
+                class="content-thread-terminal-panel"
+                :thread-id="composerThreadContextId"
+                :cwd="composerCwd"
+                @hide="onHideHomeTerminal"
+                @terminal-focus-change="onTerminalFocusChange"
+              />
+              <ThreadComposer ref="homeThreadComposerRef" :active-thread-id="composerThreadContextId"
+                :cwd="composerCwd"
+                :collaboration-modes="availableCollaborationModes"
+                :selected-collaboration-mode="selectedCollaborationMode"
+                :models="availableModelIds" :selected-model="composerSelectedModelId"
+                :selected-reasoning-effort="selectedReasoningEffort"
+                :selected-speed-mode="selectedSpeedMode"
+                :is-updating-speed-mode="isUpdatingSpeedMode"
+                :skills="installedSkills"
+                :thread-token-usage="selectedThreadTokenUsage"
+                :codex-quota="codexQuota"
+                :is-turn-in-progress="false"
+                :is-stop-pending="false"
+                :is-interrupting-turn="false" :send-with-enter="sendWithEnter" :in-progress-submit-mode="inProgressSendMode"
+                :dictation-click-to-toggle="dictationClickToToggle" :dictation-auto-send="dictationAutoSend"
+                :dictation-language="dictationLanguage"
+                @submit="onSubmitThreadMessage"
+                @update:selected-collaboration-mode="onSelectCollaborationMode"
+                @update:selected-model="onSelectModel"
+                @update:selected-reasoning-effort="onSelectReasoningEffort"
+                @update:selected-speed-mode="onSelectSpeedMode" />
+            </div>
+          </div>
+        </template>
+        <template v-else>
+          <div class="content-grid">
+            <ReviewPane
+              v-if="isReviewPaneOpen && selectedThreadId && composerCwd"
+              :thread-id="selectedThreadId"
+              :cwd="composerCwd"
+              :is-thread-in-progress="isSelectedThreadInProgress"
+              :initial-file-path="reviewInitialFilePath"
+              :commit-sha="reviewInitialCommitSha"
+              @close="isReviewPaneOpen = false"
+            />
+
+            <template v-else>
+              <div class="content-thread">
+                <ThreadConversation ref="threadConversationRef" :messages="filteredMessages" :is-loading="isLoadingMessages"
+                  :active-thread-id="composerThreadContextId" :cwd="composerCwd"
+                  :live-overlay="liveOverlay"
+                  :pending-requests="selectedThreadServerRequests"
+                  :has-more-persisted-above="hasMoreOlderMessages"
+                  :is-loading-persisted-above="isLoadingOlderMessages"
+                  :load-earlier-messages="loadOlderMessages"
+                  @fork-thread="onForkThreadFromMessage"
+                  @rollback="onRollback"
+                  @implement-plan="onImplementPlan"
+                  @respond-server-request="onRespondServerRequest" />
+              </div>
+
+              <div class="composer-with-queue">
+                <div v-if="codexCliMissingError" class="composer-runtime-error" role="alert">
+                  <span>{{ t(codexCliMissingError) }}</span>
+                  <a class="visible-error-feedback" :href="feedbackMailto" @click="prepareFeedbackLink($event, codexCliMissingError)">{{ t('Send feedback') }}</a>
+                </div>
+                <QueuedMessages
+                  :messages="selectedThreadQueuedMessages"
+                  @edit="onEditQueuedMessage"
+                  @steer="steerQueuedMessage"
+                  @delete="removeQueuedMessage"
+                  @reorder="onReorderQueuedMessage"
+                />
+                <ThreadTerminalPanel
+                  v-if="selectedThreadTerminalOpen && selectedThreadId && composerCwd"
+                  ref="threadTerminalPanelRef"
+                  class="content-thread-terminal-panel"
+                  :thread-id="selectedThreadId"
+                  :cwd="composerCwd"
+                  @hide="onHideSelectedThreadTerminal"
+                  @terminal-focus-change="onTerminalFocusChange"
+                />
+                <ThreadPendingRequestPanel
+                  v-if="selectedThreadPendingRequest"
+                  :request="selectedThreadPendingRequest"
+                  :request-count="selectedThreadServerRequests.length"
+                  :has-queue-above="selectedThreadQueuedMessages.length > 0"
+                  @respond-server-request="onRespondServerRequest"
+                />
+                <ThreadComposer
+                  v-else
+                  ref="threadComposerRef"
+                  :active-thread-id="composerThreadContextId"
+                  :cwd="composerCwd"
+                  :collaboration-modes="availableCollaborationModes"
+                  :selected-collaboration-mode="selectedCollaborationMode"
+                  :models="availableModelIds"
+                  :selected-model="composerSelectedModelId"
+                  :selected-reasoning-effort="selectedReasoningEffort"
+                  :selected-speed-mode="selectedSpeedMode"
+                  :is-updating-speed-mode="isUpdatingSpeedMode"
+                  :skills="installedSkills"
+                  :thread-token-usage="selectedThreadTokenUsage"
+                  :codex-quota="codexQuota"
+                  :is-turn-in-progress="isSelectedThreadInProgress"
+                  :is-stop-pending="isSelectedThreadInterruptPending"
+                  :is-interrupting-turn="isInterruptingTurn"
+                  :has-queue-above="selectedThreadQueuedMessages.length > 0"
+                  :send-with-enter="sendWithEnter" :in-progress-submit-mode="inProgressSendMode"
+                  :dictation-click-to-toggle="dictationClickToToggle" :dictation-auto-send="dictationAutoSend"
+                  :dictation-language="dictationLanguage"
+                  @update:selected-collaboration-mode="onSelectCollaborationMode"
+                  @submit="onSubmitThreadMessage" @update:selected-model="onSelectModel"
+                  @update:selected-reasoning-effort="onSelectReasoningEffort"
+                  @update:selected-speed-mode="onSelectSpeedMode"
+                  @interrupt="onInterruptTurn" />
+              </div>
+            </template>
+          </div>
+        </template>
+      </section>
+    </section>
+    <template #bottom-nav>
+      <MobileBottomNav
+        :active-tab="mobileActiveTab"
+        @select="onMobileTabSelect"
+      />
+    </template>
+  </MobileLayout>
+</template>
+<Teleport to="body">
     <Transition name="drawer">
       <div v-if="showSentinelsPanel" class="sentinels-overlay-backdrop" @click="showSentinelsPanel = false">
         <div class="sentinels-overlay-panel" @click.stop>
@@ -1250,6 +1820,8 @@
 import { computed, defineAsyncComponent, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import DesktopLayout from './components/layout/DesktopLayout.vue'
+import MobileLayout from './components/layout/MobileLayout.vue'
+import MobileBottomNav from './components/mobile/MobileBottomNav.vue'
 import SidebarThreadTree from './components/sidebar/SidebarThreadTree.vue'
 import ContentHeader from './components/content/ContentHeader.vue'
 import ThreadComposer from './components/content/ThreadComposer.vue'
@@ -1835,6 +2407,21 @@ const contentTitle = computed(() => {
   if (isHomeRoute.value) return t('Start new thread')
   return selectedThread.value?.title ?? t('Choose a thread')
 })
+const mobileActiveTab = computed(() => {
+  if (isSkillsRoute.value) return 'skills'
+  if (isAutomationsRoute.value) return 'automations'
+  if (isSocketSecurityRoute.value) return 'socket-security'
+  if (isSupabaseRoute.value) return 'supabase'
+  if (isSentinelsRoute.value) return 'sentinels'
+  return 'home'
+})
+function onMobileTabSelect(tab: string) {
+  if (tab === 'home') {
+    router.push({ name: 'home' })
+  } else {
+    router.push({ name: tab })
+  }
+}
 const browserHostName =
   typeof window !== 'undefined'
     ? (window.location.hostname || window.location.host || 'codexui')
