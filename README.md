@@ -35,6 +35,16 @@ cd Modex-Sandbox-
 
 Opens at **`http://127.0.0.1:4173`** — no configuration needed.
 
+#### 🧹 Clean uninstall
+
+```bash
+cd ..
+rm -rf Modex-Sandbox-
+rm -rf ~/.codex          # app config, sessions, cached data
+```
+
+Removes the app folder and all Codex config, saved sessions, and cached data. If you set a custom `$CODEX_HOME`, use that path instead.
+
 ---
 
 ## Why MODEX?
