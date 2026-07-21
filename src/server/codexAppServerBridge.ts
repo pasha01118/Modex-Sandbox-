@@ -15,6 +15,7 @@ import { handleAccountRoutes } from './accountRoutes.js'
 import { handleSocketSecurityRoutes } from './socketSecurityRouter.js'
 import { handleSupabaseRoutes } from './supabaseRouter.js'
 import { handleSentinelRoutes } from './sentinelRouter.js'
+import { handleOllamaRoutes } from './ollamaRouter.js'
 import { buildAppServerArgs } from './appServerRuntimeConfig.js'
 import { callRpcWithRateLimitDecodeRecovery } from './rateLimitDecodeRecovery.js'
 import { handleReviewRoutes } from './reviewGit.js'
@@ -7883,6 +7884,10 @@ export function createCodexBridgeMiddleware(): CodexBridgeMiddleware {
       }
 
       if (await handleSentinelRoutes(req, res, url)) {
+        return
+      }
+
+      if (await handleOllamaRoutes(req, res, url)) {
         return
       }
 

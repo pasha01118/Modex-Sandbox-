@@ -43,6 +43,11 @@ const router = createRouter({
       component: EmptyRouteView,
     },
     {
+      path: '/ollama',
+      name: 'ollama',
+      component: EmptyRouteView,
+    },
+    {
       path: '/new-thread',
       redirect: { name: 'home' },
     },

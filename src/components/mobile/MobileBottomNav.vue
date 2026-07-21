@@ -44,6 +44,7 @@ const tabs: NavTab[] = [
   { name: 'socket-security', label: 'Security', icon: IconTablerShieldCheck },
   { name: 'supabase', label: 'Supabase', icon: IconTablerDatabase },
   { name: 'sentinels', label: 'Sentinels', icon: IconTablerShieldScan },
+  { name: 'ollama', label: 'Ollama', icon: IconTablerSettings },
 ]
 </script>
 
