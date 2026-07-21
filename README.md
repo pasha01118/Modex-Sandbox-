@@ -18,11 +18,26 @@
     <img src="https://img.shields.io/badge/platform-Web%20%7C%20Mobile-6366f1?style=flat-square" alt="Platform"/>
     <img src="https://img.shields.io/badge/license-MIT-22c55e?style=flat-square" alt="License"/>
     <img src="https://img.shields.io/badge/node-%3E%3D18-339933?style=flat-square&logo=nodedotjs" alt="Node"/>
-    <img src="https://img.shields.io/badge/autonomous-agent_built_in-7c3aed?style=flat-square" alt="Agentic"/>
+    <img src="https://img.shields.io/badge/agent_framework-built_in-7c3aed?style=flat-square" alt="Agentic"/>
   </p>
 
   <br/>
 </div>
+
+---
+
+## 📋 Table of Contents
+
+- [Quick Start](#quick-start)
+- [What You Can Do](#what-you-can-do)
+- [Agentic Auto-Pilot System](#-auto-pilot--agentic-autonomous-system)
+- [Local AI with Ollama](#-local-ai-with-ollama)
+- [Self-Maintenance](#-self-maintenance-system)
+- [Adaptive UI](#-adaptive-ui)
+- [Project Structure](#project-structure)
+- [Tech Stack](#tech-stack)
+- [Development](#development)
+- [Clean Uninstall](#-clean-uninstall)
 
 ---
 
@@ -34,35 +49,32 @@ cd Modex-Sandbox-
 ./run.sh
 ```
 
-Opens at **`http://127.0.0.1:4173`** — no configuration needed. Accessible on LAN via `http://<your-ip>:4173`.
+Opens at **`http://127.0.0.1:4173`** — no configuration needed. Accessible on LAN.
 
-#### With local AI (Ollama)
+### With local AI models (Ollama)
 
 ```bash
-./run.sh --ollama        # auto-installs Ollama + pulls starter model
+./run.sh --ollama
 ```
 
-#### On Android / Termux
+Auto-installs Ollama, pulls a starter model, starts both the server and Ollama.
+
+### On Android / Termux
+
+The `run.sh` script auto-detects Termux and handles pnpm installation. Use **two Termux tabs**:
 
 ```bash
-./run.sh                 # installs pnpm, deps, builds, starts server
-# In a separate Termux tab, install Ollama for local AI:
+# Tab 1 — run the app
+./run.sh
+
+# Tab 2 — install Ollama for local AI (separate session)
 bash scripts/install-ollama-termux.sh
 ```
 
-#### 🧹 Clean uninstall
-
-```bash
-cd ..
-rm -rf Modex-Sandbox-
-rm -rf ~/.codex          # app config, sessions, cached data, agent memory
-```
-
----
-
-## Why MODEX?
-
-MODEX transforms the Codex AI coding agent into a **full agentic autonomous platform** that works on your phone and desktop. The interface auto-adapts — bottom tab bar on mobile, sidebar layout on desktop — while running a built-in multi-agent system that plans, executes, and self-maintains.
+| Tab | What it runs | Stays running? |
+|-----|-------------|----------------|
+| 1 | `./run.sh` | Yes — keeps the web server alive |
+| 2 | `bash scripts/install-ollama-termux.sh` | No — installs Ollama, starts in background |
 
 ---
 
@@ -70,99 +82,119 @@ MODEX transforms the Codex AI coding agent into a **full agentic autonomous plat
 
 | Area | What It Does |
 |---|---|
-| **💬 Chat** | Start new threads, continue conversations, fork discussions |
+| **💬 Chat** | Start threads, continue conversations, fork discussions with AI |
+| **🤖 Auto-Pilot** | Submit high-level goals → agents plan, execute, and self-correct |
+| **🧠 Ollama** | Manage local AI models: pull, list, test, delete, auto-suggested by your device RAM |
 | **⚡ Skills** | Browse, install, and manage AI skills from the marketplace |
-| **🤖 Automations** | Create and run automated workflows visually |
-| **🛡️ Security** | Monitor socket connections in real time |
+| **🤖 Automations** | Create recurring automated workflows (cron / heartbeat) |
+| **🛡️ Security** | Monitor socket/SBOM supply-chain vulnerabilities in real time |
 | **🗄️ Supabase** | Manage your Supabase database from the panel |
-| **👁️ Sentinels** | Watch AI agent health with live status cards |
-| **🧠 Ollama** | Manage local AI models: pull, list, test, delete, auto-suggested by device RAM |
-| **🤖 Auto-Pilot** | Submit high-level goals → autonomous agents plan, execute, self-correct |
+| **👁️ Sentinels** | Watch security agents with live status cards |
+| **🔧 Maintenance** | Health checks, auto-update, disk/memory alerts |
 
 ---
 
-## Features at a Glance
+## 🤖 Auto-Pilot — Agentic Autonomous System
 
-### 🤖 Auto-Pilot — Agentic Autonomous System
-
-Set a goal in plain English — the built-in agent framework handles the rest:
-
-- **Planner Agent** uses your local Ollama model to break goals into concrete, dependency-ordered steps
-- **Executor Agent** runs each step using 13+ tools (shell, file I/O, git, search, glob)
-- **Self-Correction** — when a step fails, the planner automatically revises the remaining plan
-- **Durable Task Queue** — persists to disk (`~/.codex/agent-tasks.json`), survives restarts, supports retry chains and concurrency limits
-- **Agent Memory** — persistent key-value store so agents remember across sessions
-- **Maintainer Agent** — periodic health checks (CPU/mem/disk/git/Ollama) + auto-update (git pull → rebuild)
+Set a goal in plain English — the built-in agent framework handles the rest.
 
 ```
 Goal: "Check git status, fix lint errors, then commit"
-  ├── PlannerAgent breaks into 3 steps
-  ├── ExecutorAgent runs step 1 (git status)
-  ├── ExecutorAgent runs step 2 (fix lint errors)
-  ├── ExecutorAgent runs step 3 (git add + commit)
-  └── Self-Correction: if a step fails, Planner revises
+  ├── PlannerAgent (Ollama) → breaks goal into 3 steps
+  ├── ExecutorAgent → runs step 1 (git status)
+  ├── ExecutorAgent → runs step 2 (fix lint errors)
+  ├── ExecutorAgent → runs step 3 (git add + commit)
+  └── If any step fails → Planner revises remaining plan automatically
 ```
 
-### 🧠 Local AI with Ollama
+### How it works
 
-Full integration with locally-running Ollama models:
+1. **Submit a goal** in the Auto-Pilot panel (e.g. *"Find all unused imports and remove them"*)
+2. **Planner Agent** calls your local Ollama model to decompose the goal into concrete, dependency-ordered steps
+3. **Executor Agent** runs each step using 13+ tools:
+   - `executeCommand` — run any shell command
+   - `readFile` / `writeFile` / `searchCode` / `globFiles`
+   - `gitStatus` / `gitCommit` / `gitLog`
+   - `readJson` / `writeJson` / `listDirectory`
+4. **Self-correction** — if a step errors, the Planner revises remaining steps and retries
+5. **Durable queue** — tasks persist to `~/.codex/agent-tasks.json`, survive restarts
+6. **Agent memory** — persistent KV store (`~/.codex/agent-memory/`) so agents retain context
 
-- **Connection status** — detects running Ollama instance on `127.0.0.1:11434`
-- **Device-aware suggestions** — analyzes your device RAM and recommends models that fit (a model is suggested if RAM ≥ 2× model requirements)
-- **Pull with streaming progress** — real-time download progress bar
-- **Local model management** — list, test, and delete installed models
-- **Quick test chat** — send a prompt and see the response inline
+### Architecture
 
-### 📱 Adaptive UI
-
-- **Phone**: 8-tab bottom navigation (Chat / Skills / Auto / Security / Supabase / Sentinels / Ollama / Agents)
-- **Desktop**: Collapsible sidebar with threaded nav, thread tree, speed selector, review pane
-- Auto-detects viewport — no manual switching
-
-### 👁️ Sentinel Agent Monitor
-
-- Live dashboard for 6+ AI agents
-- Compact LED-indicator cards with health status
-- Master mode toggle (auto/manual) + per-agent restart
-
-### 🔌 Plugin Marketplace
-
-- Discover, install, and manage plugins
-- Detail modals, GitHub sync for community skills
-
-### 🔧 Self-Maintenance System
-
-- **Health dashboard** — real-time memory, CPU, disk, git, and Ollama status
-- **Auto-update** — checks origin/main for new commits, pulls, rebuilds
-- **Periodic checks** — automatic every 5 minutes (health) and 1 hour (updates)
-- **Alerts** — warns when memory or disk usage is critically high
-
-### 📦 Project Management
-
-- Import/export projects as ZIP
-- Git worktree isolation per thread
-- File picker and directory browser
-
-### ⚡ Developer Experience
-
-- One-command startup via `run.sh`
-- Inline terminal composer for shell commands
-- Rate-limit monitoring dashboard
+```
+┌─────────────────────────────────────────────────────┐
+│                    Agent Router                       │
+│  POST /agent/goal  GET /agent/status  ... (17 APIs) │
+└──────────────────────┬──────────────────────────────┘
+                       │
+┌──────────────────────▼──────────────────────────────┐
+│                Agent Orchestrator                     │
+│  ┌──────────┐  ┌──────────┐  ┌──────────────────┐   │
+│  │ Planner   │  │ Executor  │  │  Maintainer      │   │
+│  │ Agent     │  │ Agent     │  │  Agent           │   │
+│  │ (LLM)     │  │ (tools)   │  │ (health+update)  │   │
+│  └──────────┘  └──────────┘  └──────────────────┘   │
+│              │           │              │            │
+│              ▼           ▼              ▼            │
+│        ┌─────────┐ ┌─────────┐ ┌──────────────┐     │
+│        │ Tool    │ │ Task    │ │ AgentMemory  │     │
+│        │Registry │ │ Queue   │ │ (KV store)   │     │
+│        └─────────┘ └─────────┘ └──────────────┘     │
+└──────────────────────────────────────────────────────┘
+```
 
 ---
 
-## Mobile Navigation Reference
+## 🧠 Local AI with Ollama
 
-| Tab | Route | Purpose |
-|---|---|---|
-| 💬 Chat | `/` or `/thread/:id` | Home / conversation view |
-| ⚡ Skills | `/skills` | Skill management |
-| 🤖 Auto | `/automations` | Workflow editor |
-| 🛡️ Security | `/socket-security` | Connection monitor |
-| 🗄️ Supabase | `/supabase` | Database panel |
-| 👁️ Sentinels | `/sentinels` | Agent dashboard |
-| 🧠 Ollama | `/ollama` | Local AI model management |
-| 🤖 Agents | `/auto-pilot` | Auto-Pilot goal submission & task dashboard |
+Full integration with locally-running Ollama models:
+
+- **Connection status** — auto-detects Ollama on `127.0.0.1:11434`
+- **Device-aware suggestions** — scans your RAM, recommends models that fit (rule: RAM ≥ 2× model requirement)
+- **Streaming pull** — real-time progress bar when downloading models
+- **Model management** — list installed models, test with a prompt, delete unwanted ones
+- **Quick test chat** — send any prompt and see the response inline
+
+### Install Ollama
+
+| Platform | Command |
+|----------|---------|
+| Linux | `curl -fsSL https://ollama.com/install.sh \| sh` |
+| Android / Termux | `bash scripts/install-ollama-termux.sh` |
+| Via run.sh | `./run.sh --ollama` |
+| Manual | Download from [ollama.com/download](https://ollama.com/download) |
+
+---
+
+## 🔧 Self-Maintenance System
+
+The **Maintainer Agent** runs automatically at startup:
+
+| Check | Interval | What it monitors |
+|-------|----------|-----------------|
+| Memory | 5 min | RAM usage % — alerts above 90% |
+| CPU | 5 min | Load average, core count |
+| Disk | 5 min | Available space — alerts above 95% |
+| Git | 5 min | Branch, commits behind/ahead |
+| Ollama | 5 min | Server reachable on port 11434 |
+| Auto-update | 1 hour | `git fetch origin`, pull + rebuild if new commits |
+
+Run on-demand from the Auto-Pilot panel or via API:
+```bash
+curl -X POST http://127.0.0.1:4173/codex-api/agent/self-heal/check
+curl -X POST http://127.0.0.1:4173/codex-api/agent/self-heal/update
+```
+
+---
+
+## 📱 Adaptive UI
+
+- **Phone** — 8-tab bottom navigation bar:
+  `Chat · Skills · Auto · Security · Supabase · Sentinels · Ollama · Agents`
+- **Desktop** — collapsible sidebar with threaded nav, thread tree, speed selector, review pane
+- Auto-detects viewport, no manual switching
+- Dark theme support throughout
 
 ---
 
@@ -171,33 +203,32 @@ Full integration with locally-running Ollama models:
 ```
 src/
 ├── api/                  # Server API clients (codex, ollama, sentinel, supabase...)
-├── cli/                  # CLI entry point
+├── cli/                  # CLI entry point (Commander.js)
 ├── components/
-│   ├── content/          # Panel components (chat, skills, automations,
-│   │                        ollama, auto-pilot, sentinels, supabase...)
-│   ├── icons/            # SVG icon library
+│   ├── content/          # All panel components
+│   ├── icons/            # SVG icon library (Tabler)
 │   ├── layout/           # DesktopLayout / MobileLayout shells
-│   ├── mobile/           # Mobile-only components (bottom nav)
-│   └── sidebar/          # Sidebar tree and controls
-├── composables/          # Shared Vue composables
-├── router/               # Hash-based routing config
+│   ├── mobile/           # MobileBottomNav
+│   └── sidebar/          # Sidebar thread tree + controls
+├── composables/          # Shared Vue composables (useMobile, useUiLanguage...)
+├── router/               # Vue Router (hash history)
 ├── server/
-│   ├── agent/            # 🤖 Autonomous Agent Framework
+│   ├── agent/            # 🤖 Agentic framework
 │   │   ├── eventBus.ts       # Pub/sub event system
 │   │   ├── baseAgent.ts      # Abstract agent class
-│   │   ├── toolRegistry.ts   # 13+ tools (shell, file, git, search)
-│   │   ├── taskQueue.ts      # Durable persistent task queue
+│   │   ├── toolRegistry.ts   # 13+ agent tools
+│   │   ├── taskQueue.ts      # Durable persistent queue
 │   │   ├── agentMemory.ts    # Namespaced KV store
-│   │   ├── taskPlanner.ts    # LLM-powered goal planner (Ollama)
+│   │   ├── taskPlanner.ts    # LLM goal planner (Ollama)
 │   │   ├── agentOrchestrator.ts # Central orchestrator
-│   │   ├── selfHeal.ts       # Health checks + auto-update
+│   │   ├── selfHeal.ts       # Health + auto-update
 │   │   └── defaultAgents.ts  # 3 built-in agents
-│   ├── agentRouter.ts    # Agent API routes (17 endpoints)
+│   ├── agentRouter.ts    # 17 agent API endpoints
 │   ├── ollamaRouter.ts   # Ollama backend proxy
-│   ├── sentinelRouter.ts # Sentinel agent monitoring
+│   ├── sentinelRouter.ts # Security agents
 │   ├── supabaseRouter.ts # Supabase management
 │   ├── socketSecurityRouter.ts # Supply-chain security
-│   └── codexAppServerBridge.ts # Central API bridge (~9700 lines)
+│   └── codexAppServerBridge.ts # Central API bridge
 ├── types/                # TypeScript definitions
 └── utils/                # Helpers and utilities
 ```
@@ -207,13 +238,14 @@ src/
 ## Tech Stack
 
 ```
-Frontend    Vue 3 · TypeScript · Vite
+Frontend    Vue 3 · TypeScript · Vite · Tailwind CSS
 Backend     Node.js · Express-style server
 Routing     Vue Router (hash history)
 State       Composition API (refs / computed)
 Styling     CSS custom properties · scoped styles
-Agent       Built-in multi-agent framework with Ollama LLM planning
-Build       pnpm · esbuild · Vue-TSC
+Agent       Built-in multi-agent framework + Ollama LLM planning
+Build       pnpm · tsup (CLI) · Vite (frontend) · vue-tsc
+APIs        OpenAI Codex RPC · Ollama REST · Supabase · Socket.dev
 ```
 
 ---
@@ -225,10 +257,32 @@ pnpm install
 pnpm run dev --host 127.0.0.1 --port 4173
 ```
 
-Build only:
+Build for production:
 ```bash
 pnpm run build
 ```
+
+Preview production build:
+```bash
+pnpm run preview
+```
+
+Run tests:
+```bash
+pnpm run test:unit
+```
+
+---
+
+## 🧹 Clean Uninstall
+
+```bash
+cd ..
+rm -rf Modex-Sandbox-
+rm -rf ~/.codex          # app config, sessions, agent tasks, agent memory
+```
+
+If you set a custom `$CODEX_HOME`, use that path instead.
 
 ---
 
