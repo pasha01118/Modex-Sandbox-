@@ -48,6 +48,11 @@ const router = createRouter({
       component: EmptyRouteView,
     },
     {
+      path: '/auto-pilot',
+      name: 'auto-pilot',
+      component: EmptyRouteView,
+    },
+    {
       path: '/new-thread',
       redirect: { name: 'home' },
     },

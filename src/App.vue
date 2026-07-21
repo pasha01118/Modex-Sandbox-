@@ -144,6 +144,21 @@
                 <span class="sidebar-skills-link-subtitle">{{ t('Local AI models') }}</span>
               </span>
             </button>
+
+            <button
+              class="sidebar-skills-link"
+              :class="{ 'is-active': isAutoPilotRoute, 'is-collapsed': isSidebarCollapsed }"
+              type="button"
+              @click="router.push({ name: 'auto-pilot' }); isMobile && setSidebarCollapsed(true)"
+            >
+              <span class="sidebar-skills-link-icon sidebar-autopilot-link-icon" aria-hidden="true">
+                <IconTablerBolt />
+              </span>
+              <span v-if="!isSidebarCollapsed" class="sidebar-skills-link-copy">
+                <span class="sidebar-skills-link-title">{{ t('Auto-Pilot') }}</span>
+                <span class="sidebar-skills-link-subtitle">{{ t('Autonomous agents') }}</span>
+              </span>
+            </button>
           </template>
 
           <SidebarThreadTree ref="sidebarThreadTreeRef" :groups="projectGroups" :project-display-name-by-id="projectDisplayNameById"
@@ -587,7 +602,7 @@
         :style="contentStyle"
       >
         <span v-if="isVirtualKeyboardOpen" class="content-keyboard-spacer" aria-hidden="true" />
-        <ContentHeader :title="contentTitle" :accent="isSkillsRoute || isAutomationsRoute || isSocketSecurityRoute || isSupabaseRoute || isSentinelsRoute">
+        <ContentHeader :title="contentTitle" :accent="isSkillsRoute || isAutomationsRoute || isSocketSecurityRoute || isSupabaseRoute || isSentinelsRoute || isOllamaRoute || isAutoPilotRoute">
           <template #leading>
             <SidebarThreadControls
               v-if="isSidebarCollapsed || isMobile"
@@ -611,6 +626,12 @@
             </span>
             <span v-else-if="isSentinelsRoute" class="skills-route-header-icon sentinels-route-header-icon" aria-hidden="true">
               <IconTablerShieldScan />
+            </span>
+            <span v-else-if="isOllamaRoute" class="skills-route-header-icon ollama-route-header-icon" aria-hidden="true">
+              <IconTablerSettings />
+            </span>
+            <span v-else-if="isAutoPilotRoute" class="skills-route-header-icon autopilot-route-header-icon" aria-hidden="true">
+              <IconTablerBolt />
             </span>
           </template>
           <template #actions>
@@ -692,6 +713,9 @@
           </template>
           <template v-else-if="isOllamaRoute">
             <OllamaPanel />
+          </template>
+          <template v-else-if="isAutoPilotRoute">
+            <AutoPilotPanel />
           </template>
           <template v-else-if="isHomeRoute">
             <div class="content-grid content-grid-home">
@@ -1181,6 +1205,9 @@
           <span v-else-if="isOllamaRoute" class="skills-route-header-icon ollama-route-header-icon" aria-hidden="true">
             <IconTablerSettings />
           </span>
+          <span v-else-if="isAutoPilotRoute" class="skills-route-header-icon autopilot-route-header-icon" aria-hidden="true">
+            <IconTablerBolt />
+          </span>
         </template>
         <template #actions>
           <ComposerDropdown
@@ -1261,6 +1288,9 @@
         </template>
         <template v-else-if="isOllamaRoute">
           <OllamaPanel />
+        </template>
+        <template v-else-if="isAutoPilotRoute">
+          <AutoPilotPanel />
         </template>
         <template v-else-if="isHomeRoute">
           <div class="content-grid content-grid-home">
@@ -1920,6 +1950,7 @@ const SocketSecurityPanel = defineAsyncComponent(() => import('./components/cont
 const SupabasePanel = defineAsyncComponent(() => import('./components/content/SupabasePanel.vue'))
 const SentinelsPanel = defineAsyncComponent(() => import('./components/content/SentinelsPanel.vue'))
 const OllamaPanel = defineAsyncComponent(() => import('./components/content/OllamaPanel.vue'))
+const AutoPilotPanel = defineAsyncComponent(() => import('./components/content/AutoPilotPanel.vue'))
 const { t, uiLanguage, uiLanguageOptions, setUiLanguage } = useUiLanguage()
 
 const SIDEBAR_COLLAPSED_STORAGE_KEY = 'codex-web-local.sidebar-collapsed.v1'
@@ -2420,6 +2451,7 @@ const isSocketSecurityRoute = computed(() => route.name === 'socket-security')
 const isSupabaseRoute = computed(() => route.name === 'supabase')
 const isSentinelsRoute = computed(() => route.name === 'sentinels')
 const isOllamaRoute = computed(() => route.name === 'ollama')
+const isAutoPilotRoute = computed(() => route.name === 'auto-pilot')
 const routeAutomationId = computed(() => {
   const raw = route.query.automationId
   return typeof raw === 'string' ? raw : ''
@@ -2431,6 +2463,7 @@ const contentTitle = computed(() => {
   if (isSupabaseRoute.value) return t('Supabase')
   if (isSentinelsRoute.value) return t('Sentinels')
   if (isOllamaRoute.value) return t('Ollama')
+  if (isAutoPilotRoute.value) return t('Auto-Pilot')
   if (isHomeRoute.value) return t('Start new thread')
   return selectedThread.value?.title ?? t('Choose a thread')
 })
@@ -2441,6 +2474,7 @@ const mobileActiveTab = computed(() => {
   if (isSupabaseRoute.value) return 'supabase'
   if (isSentinelsRoute.value) return 'sentinels'
   if (isOllamaRoute.value) return 'ollama'
+  if (isAutoPilotRoute.value) return 'auto-pilot'
   return 'home'
 })
 function onMobileTabSelect(tab: string) {
@@ -2510,7 +2544,7 @@ const isTerminalKeyboardLayoutActive = computed(() => (
 ))
 const directoryCwd = computed(() => selectedThread.value?.cwd?.trim() ?? newThreadCwd.value.trim())
 const isSelectedThreadInProgress = computed(() => !isHomeRoute.value && selectedThread.value?.inProgress === true)
-const showThreadContextBadge = computed(() => !isHomeRoute.value && !isSkillsRoute.value && !isAutomationsRoute.value && !isSocketSecurityRoute.value && !isSupabaseRoute.value && !isSentinelsRoute.value && !isOllamaRoute.value && selectedThreadId.value.trim().length > 0)
+const showThreadContextBadge = computed(() => !isHomeRoute.value && !isSkillsRoute.value && !isAutomationsRoute.value && !isSocketSecurityRoute.value && !isSupabaseRoute.value && !isSentinelsRoute.value && !isOllamaRoute.value && !isAutoPilotRoute.value && selectedThreadId.value.trim().length > 0)
 const isAccountSwitchBlocked = computed(() =>
   isSendingMessage.value ||
   isInterruptingTurn.value ||
@@ -5435,7 +5469,7 @@ watch(
   async (threadId) => {
     if (!hasInitialized.value) return
     if (isRouteSyncInProgress.value) return
-  if (isHomeRoute.value || isSkillsRoute.value || isAutomationsRoute.value || isSocketSecurityRoute.value || isSupabaseRoute.value || isSentinelsRoute.value || isOllamaRoute.value) return
+  if (isHomeRoute.value || isSkillsRoute.value || isAutomationsRoute.value || isSocketSecurityRoute.value || isSupabaseRoute.value || isSentinelsRoute.value || isOllamaRoute.value || isAutoPilotRoute.value) return
 
     if (!threadId) {
       if (route.name !== 'home') {
@@ -5794,6 +5828,10 @@ async function loadWorktreeBranches(sourceCwd: string): Promise<void> {
 
 .sidebar-ollama-link-icon {
   @apply bg-amber-600;
+}
+
+.sidebar-autopilot-link-icon {
+  @apply bg-purple-600;
 }
 
 .sidebar-skills-link-icon :deep(svg) {

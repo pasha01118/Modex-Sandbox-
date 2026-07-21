@@ -16,6 +16,9 @@ import { handleSocketSecurityRoutes } from './socketSecurityRouter.js'
 import { handleSupabaseRoutes } from './supabaseRouter.js'
 import { handleSentinelRoutes } from './sentinelRouter.js'
 import { handleOllamaRoutes } from './ollamaRouter.js'
+import { handleAgentRoutes } from './agentRouter.js'
+import { defaultAgents } from './agent/defaultAgents.js'
+import { orchestrator } from './agent/agentOrchestrator.js'
 import { buildAppServerArgs } from './appServerRuntimeConfig.js'
 import { callRpcWithRateLimitDecodeRecovery } from './rateLimitDecodeRecovery.js'
 import { handleReviewRoutes } from './reviewGit.js'
@@ -7525,6 +7528,8 @@ export function createCodexBridgeMiddleware(): CodexBridgeMiddleware {
     return threadSearchIndexPromise
   }
   void initializeSkillsSyncOnStartup(appServer)
+  defaultAgents.registerAll()
+  void orchestrator.initializeAll()
   void readTelegramBridgeConfig()
     .then((config) => {
       if (!config.botToken) return
@@ -7888,6 +7893,10 @@ export function createCodexBridgeMiddleware(): CodexBridgeMiddleware {
       }
 
       if (await handleOllamaRoutes(req, res, url)) {
+        return
+      }
+
+      if (await handleAgentRoutes(req, res, url)) {
         return
       }
 
