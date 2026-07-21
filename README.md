@@ -36,6 +36,20 @@ cd Modex-Sandbox-
 
 Opens at **`http://127.0.0.1:4173`** — no configuration needed. Accessible on LAN via `http://<your-ip>:4173`.
 
+#### With local AI (Ollama)
+
+```bash
+./run.sh --ollama        # auto-installs Ollama + pulls starter model
+```
+
+#### On Android / Termux
+
+```bash
+./run.sh                 # installs pnpm, deps, builds, starts server
+# In a separate Termux tab, install Ollama for local AI:
+bash scripts/install-ollama-termux.sh
+```
+
 #### 🧹 Clean uninstall
 
 ```bash

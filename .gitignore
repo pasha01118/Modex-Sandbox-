@@ -5,11 +5,23 @@ output/
 .playwright-cli/
 test-results/
 *.tsbuildinfo
+*.js.map
 
 package-lock.json
 pnpm-lock.yaml
 .codex/
 .env.local
-
-package.json
 .omx/
+
+# Compiled .js artifacts from .ts sources
+src/**/*.js
+src/api/normalizers/*.js
+src/components/**/*.vue.js
+src/composables/*.js
+src/router/*.js
+src/server/*.js
+src/types/*.js
+src/utils/*.js
+src/main.js
+src/commandResolution.js
+src/pathUtils.js
