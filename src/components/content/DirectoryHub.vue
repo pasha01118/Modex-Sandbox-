@@ -764,8 +764,8 @@ const route = useRoute()
 const router = useRouter()
 
 const tabs: Array<{ id: DirectoryTab; label: string; subtitle: string }> = [
-  { id: 'plugins', label: 'Plugins', subtitle: 'Plugins make Codex work your way.' },
-  { id: 'apps', label: 'Apps', subtitle: 'Connect Codex to external apps and services.' },
+  { id: 'plugins', label: 'Plugins', subtitle: 'Plugins make MODEX AI work your way.' },
+  { id: 'apps', label: 'Apps', subtitle: 'Connect MODEX AI to external apps and services.' },
   { id: 'composio', label: 'Composio', subtitle: 'Browse Composio connectors, auth state, and ready-to-try integrations.' },
   { id: 'skills', label: 'Skills', subtitle: 'MCPs first, then installed skills and GitHub sync state.' },
 ]
@@ -808,7 +808,7 @@ const composioPreviewConnectors = [
     slug: 'google-drive',
     initial: 'D',
     meta: 'Files, docs, folders',
-    description: 'Find files, read shared docs, and bring Drive context into a Codex thread.',
+    description: 'Find files, read shared docs, and bring Drive context into a MODEX AI thread.',
     chips: ['Files', 'Docs', 'Search'],
   },
   {

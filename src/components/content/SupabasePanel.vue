@@ -7,7 +7,7 @@
         <h2 class="supabase-setup-title">Supabase Database</h2>
         <p class="supabase-setup-desc">
           Connect to your Supabase project to browse tables, run SQL queries,
-          manage auth users, and view storage — all from inside Codex.
+          manage auth users, and view storage — all from inside MODEX AI.
         </p>
         <div class="supabase-setup-fields">
           <label class="supabase-setup-label">

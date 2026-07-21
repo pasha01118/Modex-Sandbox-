@@ -347,7 +347,7 @@
                 <span class="sidebar-settings-value">{{ t('Issue detected') }}</span>
               </a>
 
-              <div class="sidebar-settings-row sidebar-settings-row--select" :title="t('Choose the API provider for the Codex backend')">
+              <div class="sidebar-settings-row sidebar-settings-row--select" :title="t('Choose the API provider for the MODEX AI backend')">
                 <span class="sidebar-settings-label">{{ t('Provider') }}</span>
                 <ComposerDropdown
                   class="sidebar-settings-provider-dropdown"
@@ -755,11 +755,11 @@
                       <span class="new-thread-launch-card-badge" aria-hidden="true">
                         <IconTablerBolt />
                       </span>
-                      <p class="new-thread-launch-card-eyebrow">{{ t('New in Codex') }}</p>
+                      <p class="new-thread-launch-card-eyebrow">{{ t('New in MODEX AI') }}</p>
                     </div>
                     <h2 class="new-thread-launch-card-title">{{ t('Plugins are here') }}</h2>
                     <p class="new-thread-launch-card-text">
-                      {{ t('Hook Codex up to Gmail, Calendar, GitHub, Slack, Browser Use, and more so it can actually help with real work right away.') }}
+                      {{ t('Hook MODEX AI up to Gmail, Calendar, GitHub, Slack, Browser Use, and more so it can actually help with real work right away.') }}
                     </p>
                     <div class="new-thread-launch-card-pills" aria-label="Example integrations">
                       <span class="new-thread-launch-card-pill">Gmail</span>
@@ -1330,11 +1330,11 @@
                     <span class="new-thread-launch-card-badge" aria-hidden="true">
                       <IconTablerBolt />
                     </span>
-                    <p class="new-thread-launch-card-eyebrow">{{ t('New in Codex') }}</p>
+                    <p class="new-thread-launch-card-eyebrow">{{ t('New in MODEX AI') }}</p>
                   </div>
                   <h2 class="new-thread-launch-card-title">{{ t('Plugins are here') }}</h2>
                   <p class="new-thread-launch-card-text">
-                    {{ t('Hook Codex up to Gmail, Calendar, GitHub, Slack, Browser Use, and more so it can actually help with real work right away.') }}
+                    {{ t('Hook MODEX AI up to Gmail, Calendar, GitHub, Slack, Browser Use, and more so it can actually help with real work right away.') }}
                   </p>
                   <div class="new-thread-launch-card-pills" aria-label="Example integrations">
                     <span class="new-thread-launch-card-pill">Gmail</span>
@@ -1808,12 +1808,12 @@
       class="codex-login-modal"
       role="dialog"
       aria-modal="true"
-      :aria-label="t('Complete Codex login')"
+      :aria-label="t('Complete MODEX AI login')"
       @submit.prevent="onSubmitCodexLoginCallback"
       @click.stop
     >
       <div class="codex-login-modal-header">
-        <h2 class="codex-login-modal-title">{{ t('Complete Codex login') }}</h2>
+        <h2 class="codex-login-modal-title">{{ t('Complete MODEX AI login') }}</h2>
         <button
           class="codex-login-modal-close"
           type="button"
@@ -2562,7 +2562,7 @@ function formatCompactTokenCount(value: number): string {
 
 function buildThreadContextTooltip(usage: UiThreadTokenUsage | null): string {
   if (!usage) {
-    return t('Waiting for Codex thread/tokenUsage/updated events for this thread.')
+    return t('Waiting for thread/tokenUsage/updated events for this thread.')
   }
 
   const lines = [

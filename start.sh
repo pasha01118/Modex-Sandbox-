@@ -22,7 +22,7 @@ fi
 
 # Start via Vite CLI directly (bypass dev.cjs which doesn't support --host)
 echo ""
-echo "  Codex Web UI running at:  http://$HOST:$PORT/"
+echo "  MODEX AI running at:  http://$HOST:$PORT/"
 echo ""
 
 exec node ./node_modules/vite/dist/node/cli.js --host "$HOST" --port "$PORT"

@@ -2122,7 +2122,7 @@ async function ensureRealDirectory(path: string, label: string): Promise<void> {
 }
 
 async function createProjectlessThreadDirectory(prompt: string | null): Promise<{ cwd: string; outputDirectory: string; workspaceRoot: string }> {
-  const workspaceRoot = join(homedir(), 'Documents', 'Codex')
+  const workspaceRoot = join(homedir(), 'Documents', 'MODEX-Workspace')
   await mkdir(workspaceRoot, { recursive: true })
   await ensureRealDirectory(workspaceRoot, 'Projectless workspace root')
 
@@ -6441,7 +6441,7 @@ class AppServerProcess {
   private getCodexCommand(): string {
     const codexCommand = resolveCodexCommand()
     if (!codexCommand) {
-      throw new Error('Codex CLI is not available. Install @openai/codex or set CODEXUI_CODEX_COMMAND.')
+      throw new Error('MODEX AI requires Codex CLI. Install @openai/codex or set CODEXUI_CODEX_COMMAND.')
     }
     return codexCommand
   }
@@ -7276,7 +7276,7 @@ class MethodCatalog {
     await new Promise<void>((resolve, reject) => {
       const codexCommand = resolveCodexCommand()
       if (!codexCommand) {
-        reject(new Error('Codex CLI is not available. Install @openai/codex or set CODEXUI_CODEX_COMMAND.'))
+        reject(new Error('MODEX AI requires Codex CLI. Install @openai/codex or set CODEXUI_CODEX_COMMAND.'))
         return
       }
 

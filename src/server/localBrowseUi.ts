@@ -187,14 +187,14 @@ function projectCreationButtonLabel(newProjectName: string): string {
 
 function projectCreationStatusText(newProjectName: string): string {
   const normalizedName = normalizeNewProjectName(newProjectName)
-  return normalizedName ? `Creating ${normalizedName} in Codex...` : 'Creating project in Codex...'
+  return normalizedName ? `Creating ${normalizedName} in MODEX AI...` : 'Creating project in MODEX AI...'
 }
 
 function openFolderStatusText(newProjectName: string): string {
   const normalizedName = normalizeNewProjectName(newProjectName)
   return normalizedName
-    ? `Opening folder in Codex without creating ${normalizedName}...`
-    : 'Opening folder in Codex...'
+    ? `Opening folder in MODEX AI without creating ${normalizedName}...`
+    : 'Opening folder in MODEX AI...'
 }
 
 function failureStatusText(newProjectName: string): string {
@@ -210,7 +210,7 @@ function actionButtonsHtml(localPath: string, newProjectName: string): string {
   const createButton = createTargetPath
     ? `<button class="header-open-btn create-project-btn" type="button" aria-label="${escapeHtml(projectCreationButtonLabel(normalizedName))}" title="${escapeHtml(projectCreationButtonLabel(normalizedName))}" data-path="${escapeHtml(createTargetPath)}" data-label="${escapeHtml(normalizedName)}" data-status="${escapeHtml(projectCreationStatusText(normalizedName))}" data-error="${escapeHtml(failureStatusText(normalizedName))}">${escapeHtml(projectCreationButtonLabel(normalizedName))}</button>`
     : ''
-  const openButton = `<button class="header-open-btn open-folder-btn" type="button" aria-label="Open current folder in Codex" title="Open folder in Codex" data-path="${escapeHtml(localPath)}" data-label="" data-status="${escapeHtml(openFolderStatusText(normalizedName))}" data-error="${escapeHtml(failureStatusText(normalizedName))}">Open folder in Codex</button>`
+  const openButton = `<button class="header-open-btn open-folder-btn" type="button" aria-label="Open current folder in MODEX AI" title="Open folder in MODEX AI" data-path="${escapeHtml(localPath)}" data-label="" data-status="${escapeHtml(openFolderStatusText(normalizedName))}" data-error="${escapeHtml(failureStatusText(normalizedName))}">Open folder in MODEX AI</button>`
   return `${createButton}${openButton}`
 }
 
@@ -325,7 +325,7 @@ export async function createDirectoryListingHtml(localPath: string, options?: { 
 
       const path = button.getAttribute('data-path') || '';
       const label = button.getAttribute('data-label') || '';
-      const statusText = button.getAttribute('data-status') || 'Opening folder in Codex...';
+      const statusText = button.getAttribute('data-status') || 'Opening folder in MODEX AI...';
       const errorText = button.getAttribute('data-error') || 'Failed to open folder.';
       if (!path) return;
       button.disabled = true;
@@ -345,7 +345,7 @@ export async function createDirectoryListingHtml(localPath: string, options?: { 
           button.disabled = false;
           return;
         }
-        status.textContent = 'Folder opened. Returning to Codex...';
+        status.textContent = 'Folder opened. Returning to MODEX AI...';
         const nextUrl = '/?openProjectPath=' + encodeURIComponent(path) + '#/';
         window.location.assign(nextUrl);
       } catch {

@@ -87,7 +87,7 @@ start_server() {
   info "Starting server on port $port..."
   echo ""
   echo -e "${GREEN}══════════════════════════════════════════════════════════════${NC}"
-  echo -e "${GREEN}  Codex Web UI is starting on:${NC}"
+  echo -e "${GREEN}  MODEX AI is starting on:${NC}"
   echo -e "${GREEN}  http://localhost:$port${NC}"
   echo -e "${GREEN}══════════════════════════════════════════════════════════════${NC}"
   echo ""

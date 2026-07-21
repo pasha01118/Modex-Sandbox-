@@ -40,7 +40,7 @@
                 class="thread-pending-request-inline-control"
                 type="text"
                 :value="approvalFreeformText"
-                :placeholder="t('No, and tell Codex what to do differently')"
+                :placeholder="t('No, and tell MODEX AI what to do differently')"
                 @focus="onFocusApprovalOther"
                 @input="onApprovalOtherInput"
                 @keydown.enter.prevent="onSubmitApproval(request)"
@@ -367,9 +367,9 @@ function requestPanelPrompt(request: UiServerRequest): string {
   if (isCommandApprovalRequest(request)) return 'Do you want to run this command?'
   if (isFileApprovalRequest(request)) return 'Do you want to make these changes?'
   if (isPermissionsApprovalRequest(request)) return 'Do you want to grant these permissions?'
-  if (isMcpElicitationRequest(request)) return 'An MCP server needs your input before Codex can continue.'
-  if (request.method === 'item/tool/requestUserInput') return 'Codex needs your answer before it can continue.'
-  return 'Codex is waiting for a response before it can continue.'
+  if (isMcpElicitationRequest(request)) return 'An MCP server needs your input before MODEX AI can continue.'
+  if (request.method === 'item/tool/requestUserInput') return 'MODEX AI needs your answer before it can continue.'
+  return 'MODEX AI is waiting for a response before it can continue.'
 }
 
 function unwrapApprovalCommand(value: string): string {
@@ -861,7 +861,7 @@ function onRespondApproval(request: UiServerRequest, decision: ApprovalDecision)
         id: request.id,
         error: {
           code: -32000,
-          message: decision === 'cancel' ? 'Cancelled from CodexUI.' : 'Declined from CodexUI.',
+          message: decision === 'cancel' ? 'Cancelled from MODEX AI.' : 'Declined from MODEX AI.',
         },
       })
       return
@@ -946,7 +946,7 @@ function onRespondToolCallFailure(request: UiServerRequest): void {
       contentItems: [
         {
           type: 'inputText',
-          text: 'Tool call rejected from CodexUI.',
+          text: 'Tool call rejected from MODEX AI.',
         },
       ],
     },
@@ -975,7 +975,7 @@ function onRejectUnknownRequest(request: UiServerRequest): void {
     id: request.id,
     error: {
       code: -32000,
-      message: 'Rejected from CodexUI.',
+      message: 'Rejected from MODEX AI.',
     },
   })
 }

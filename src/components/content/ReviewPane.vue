@@ -110,7 +110,7 @@
       <template v-else-if="!snapshot.isGitRepo">
         <div class="review-pane-empty">
           <p class="review-pane-empty-title">{{ t('This folder is not a Git repository') }}</p>
-          <p class="review-pane-empty-text">{{ t('Initialize Git to review local changes and run Codex review.') }}</p>
+          <p class="review-pane-empty-text">{{ t('Initialize Git to review local changes and run MODEX AI review.') }}</p>
           <button type="button" class="review-pane-primary-cta" :disabled="isInitializingGit" @click="initializeGit">
             {{ isInitializingGit ? t('Initializing…') : t('Initialize Git') }}
           </button>

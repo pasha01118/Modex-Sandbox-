@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================
-# Codex Web UI — Android Termux One-Click Deploy
+# MODEX AI — Android Termux One-Click Deploy
 # ============================================================
 # Run this script in Termux on your Android phone.
 # It installs everything and starts the server on localhost.
@@ -69,7 +69,7 @@ ok "Build complete"
 PORT="${2:-18923}"
 echo ""
 echo -e "${GREEN}══════════════════════════════════════════════════════════════${NC}"
-echo -e "${GREEN}  Codex Web UI is starting on:${NC}"
+echo -e "${GREEN}  MODEX AI is starting on:${NC}"
 echo -e "${GREEN}  http://localhost:$PORT${NC}"
 echo -e "${GREEN}  ${NC}"
 echo -e "${GREEN}  Open in Chrome → 'Add to Home Screen' for app-like mode${NC}"

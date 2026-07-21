@@ -191,7 +191,7 @@ button:hover{background:#2563eb}
 </head>
 <body>
 <div class="card">
-<h1>Codex Web</h1>
+<h1>MODEX AI</h1>
 <form id="f">
 <label for="pw">Password</label>
 <input id="pw" name="password" type="password" autocomplete="current-password" autofocus required>

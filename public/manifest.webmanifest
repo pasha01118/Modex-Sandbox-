@@ -1,7 +1,7 @@
 {
-  "name": "Codex Web",
-  "short_name": "Codex",
-  "description": "A lightweight web interface for Codex that runs on top of the Codex app-server.",
+  "name": "MODEX AI",
+  "short_name": "MODEX",
+  "description": "Autonomous agentic web interface for AI-assisted development.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
