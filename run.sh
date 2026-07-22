@@ -65,7 +65,14 @@ fi
 # ── 2. Install dependencies ──────────────────────
 if [ ! -d node_modules ]; then
   echo "[2/4] Installing dependencies..."
-  pnpm install
+  pnpm install 2>&1 || {
+    warn "pnpm install had issues — trying to approve builds..."
+    pnpm approve-builds 2>/dev/null || true
+    pnpm install 2>&1 || {
+      err "Dependency installation failed. Try: pnpm approve-builds && pnpm install"
+      exit 1
+    }
+  }
   ok "Dependencies installed"
 else
   info "Dependencies already installed"
