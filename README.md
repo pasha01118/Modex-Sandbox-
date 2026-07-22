@@ -539,12 +539,14 @@
 │   │   ├── <span style="color:#8b5cf6;">auditorAgent.ts</span>   <span style="color:#8b5cf6;font-weight:700;"># ★ Guard audit checkpoints</span>
 │   │   ├── <span style="color:#8b5cf6;">agentMarket.ts</span>    <span style="color:#8b5cf6;font-weight:700;"># ★ Agent CRUD + assignment</span>
 │   │   └── <span style="color:#8b5cf6;">customAgentFactory.ts</span> <span style="color:#8b5cf6;font-weight:700;"># ★ Dynamic agent creation</span>
+│   ├── <span style="color:#ef4444;">secretsVault.ts</span>  <span style="color:#ef4444;font-weight:700;"># ★ AES-256-GCM encryption at rest</span>
 │   ├── <span style="color:#22c55e;">agentRouter.ts</span>    <span style="color:#6060a0;"># 17 agent API endpoints</span>
 │   ├── <span style="color:#8b5cf6;">agentMessageApi.ts</span> <span style="color:#8b5cf6;font-weight:700;"># ★ Alive Agents REST + SSE API</span>
 │   ├── <span style="color:#22c55e;">ollamaRouter.ts</span>   <span style="color:#6060a0;"># Ollama backend proxy</span>
 │   ├── <span style="color:#22c55e;">sentinelRouter.ts</span> <span style="color:#6060a0;"># Security agents</span>
 │   └── <span style="color:#22c55e;">codexAppServerBridge.ts</span> <span style="color:#6060a0;"># Central API bridge</span>
 └── <span style="color:#ff6600;">scripts/</span>
+    ├── <span style="color:#ef4444;">encrypt-community-keys.js</span> <span style="color:#ef4444;font-weight:700;"># ★ One-time key encryption setup</span>
     ├── <span style="color:#22c55e;">install-ollama-termux.sh</span> <span style="color:#6060a0;"># Termux Ollama installer</span>
     └── <span style="color:#22c55e;">fix-pty-native-build.cjs</span>  <span style="color:#6060a0;"># node-pty postinstall fix</span>
 </pre>
@@ -610,6 +612,78 @@
 <tr><td style="padding:8px 16px;border-bottom:1px solid #302b63;color:#00f5ff;">Ollama</td><td style="padding:8px 16px;border-bottom:1px solid #302b63;color:#7878a0;">5 min</td><td style="padding:8px 16px;border-bottom:1px solid #302b63;color:#c0c0e0;">Server reachable on port 11434</td></tr>
 <tr><td style="padding:8px 16px;color:#ff00ff;">Auto-update</td><td style="padding:8px 16px;color:#7878a0;">1 hour</td><td style="padding:8px 16px;color:#c0c0e0;">git fetch → pull → rebuild</td></tr>
 </table>
+</div>
+
+---
+
+<!-- SECURITY -->
+<div style="background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);padding:30px 20px;border-radius:16px;border:1px solid #ef444444;box-shadow:0 0 40px #ef444422,inset 0 0 60px #00000044;margin:20px 0;">
+
+<h2 align="center" style="font-family:'Segoe UI',Arial,sans-serif;font-size:26px;font-weight:800;background:linear-gradient(90deg,#ef4444,#ff6600,#22c55e);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:2px;">
+  🔒 ENTERPRISE SECURITY
+</h2>
+
+<div align="center" style="color:#a0a0c0;font-family:Consolas,monospace;font-size:13px;letter-spacing:1px;margin-bottom:20px;">
+  AES-256-GCM encryption at rest · Rate limiting · Security headers · Zero-trust child processes
+</div>
+
+<div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;">
+
+<div style="flex:1;min-width:250px;padding:16px;border-radius:10px;background:linear-gradient(135deg,#ef444411,#ef444405);border:1px solid #ef444444;">
+  <div style="font-family:Consolas,monospace;font-size:13px;font-weight:700;color:#ef4444;text-shadow:0 0 6px #ef444444;">🔐 SecretsVault (AES-256-GCM)</div>
+  <div style="font-size:12px;color:#7878a0;font-family:Consolas,monospace;margin-top:6px;line-height:1.5;">
+    All API keys, OAuth tokens, and session data encrypted at rest with machine-bound keys. Transparent migration from plaintext — zero user friction.
+  </div>
+</div>
+
+<div style="flex:1;min-width:250px;padding:16px;border-radius:10px;background:linear-gradient(135deg,#ff660011,#ff660005);border:1px solid #ff660044;">
+  <div style="font-family:Consolas,monospace;font-size:13px;font-weight:700;color:#ff6600;text-shadow:0 0 6px #ff660044;">🛡️ Security Headers</div>
+  <div style="font-size:12px;color:#7878a0;font-family:Consolas,monospace;margin-top:6px;line-height:1.5;">
+    X-Frame-Options: DENY, CSP, X-Content-Type-Options: nosniff, HSTS, Referrer-Policy, Permissions-Policy on all responses.
+  </div>
+</div>
+
+<div style="flex:1;min-width:250px;padding:16px;border-radius:10px;background:linear-gradient(135deg,#22c55e11,#22c55e05);border:1px solid #22c55e44;">
+  <div style="font-family:Consolas,monospace;font-size:13px;font-weight:700;color:#22c55e;text-shadow:0 0 6px #22c55e44;">🚫 Rate Limiting</div>
+  <div style="font-size:12px;color:#7878a0;font-family:Consolas,monospace;margin-top:6px;line-height:1.5;">
+    Login: 5 attempts / 15 min window, 30 min lockout. WebSocket Origin validation. Body size limits on all endpoints.
+  </div>
+</div>
+
+<div style="flex:1;min-width:250px;padding:16px;border-radius:10px;background:linear-gradient(135deg,#8b5cf611,#8b5cf605);border:1px solid #8b5cf644;">
+  <div style="font-family:Consolas,monospace;font-size:13px;font-weight:700;color:#8b5cf6;text-shadow:0 0 6px #8b5cf644;">🤖 Agent Tool Security</div>
+  <div style="font-size:12px;color:#7878a0;font-family:Consolas,monospace;margin-top:6px;line-height:1.5;">
+    Path traversal prevention, command injection protection, env var regex blocklist, sensitive file access denial.
+  </div>
+</div>
+
+</div>
+
+<br/>
+
+<div align="center" style="background:#0a0a1e;border-radius:12px;padding:16px;border:1px solid #ef444433;">
+<pre style="background:transparent;color:#c0c0e0;font-family:Consolas,monospace;font-size:12px;margin:0;line-height:1.8;text-align:left;display:inline-block;">
+<span style="color:#ef4444;font-weight:700;">What's Protected:</span>
+
+  <span style="color:#22c55e;">auth.json</span>              OAuth tokens encrypted at rest (AES-256-GCM)
+  <span style="color:#22c55e;">webui-auth-sessions.json</span> Session tokens encrypted at rest
+  <span style="color:#22c55e;">community-keys.enc</span>     OpenRouter community keys (removed from source)
+  <span style="color:#22c55e;">webui-custom-providers.json</span>  Custom provider API keys encrypted
+
+<span style="color:#ef4444;font-weight:700;">Child Process Isolation:</span>
+
+  <span style="color:#ff6600;">getSafeEnv()</span>   Whitelist-only env vars passed to child processes
+  <span style="color:#ff6600;">No API keys</span>    Secrets never leak to spawned commands or tools
+
+<span style="color:#ef4444;font-weight:700;">Web Security:</span>
+
+  <span style="color:#00f5ff;">robots.txt</span>           Blocks all crawlers including AI bots (GPTBot, ClaudeBot)
+  <span style="color:#00f5ff;">Meta robots</span>         noindex, nofollow, noarchive, nosnippet
+  <span style="color:#00f5ff;">CSP</span>                 default-src 'self'; frame-ancestors 'none'
+  <span style="color:#00f5ff;">Secure cookies</span>      HttpOnly + SameSite=Lax + Secure (HTTPS)
+</pre>
+</div>
+
 </div>
 
 ---
