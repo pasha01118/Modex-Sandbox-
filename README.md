@@ -377,8 +377,65 @@
 </div>
 
 </div>
+---
+
+<!-- TOKEN ACCOUNTANT -->
+<div style="background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);padding:30px 20px;border-radius:16px;border:1px solid #22c55e44;box-shadow:0 0 40px #22c55e22,inset 0 0 60px #00000044;margin:20px 0;">
+
+<h2 align="center" style="font-family:'Segoe UI',Arial,sans-serif;font-size:26px;font-weight:800;background:linear-gradient(90deg,#22c55e,#00f5ff,#ff6600);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:2px;">
+  $ TOKEN ACCOUNTANT
+</h2>
+
+<div align="center" style="color:#a0a0c0;font-family:Consolas,monospace;font-size:13px;letter-spacing:1px;margin-bottom:20px;">
+  Live API usage tracker with budget alarms — never overspend on tokens
+</div>
+
+<div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;">
+
+<div style="flex:1;min-width:250px;padding:16px;border-radius:10px;background:linear-gradient(135deg,#22c55e11,#22c55e05);border:1px solid #22c55e44;">
+  <div style="font-family:Consolas,monospace;font-size:13px;font-weight:700;color:#22c55e;text-shadow:0 0 6px #22c55e44;">$ Live Usage Tracking</div>
+  <div style="font-size:12px;color:#7878a0;font-family:Consolas,monospace;margin-top:6px;line-height:1.5;">
+    Real-time token counting across all providers — Ollama, OpenRouter, Codex, Zen. Every API call logged with cost estimates.
+  </div>
+</div>
+
+<div style="flex:1;min-width:250px;padding:16px;border-radius:10px;background:linear-gradient(135deg,#f59e0b11,#f59e0b05);border:1px solid #f59e0b44;">
+  <div style="font-family:Consolas,monospace;font-size:13px;font-weight:700;color:#f59e0b;text-shadow:0 0 6px #f59e0b44;">! Budget Alarms</div>
+  <div style="font-size:12px;color:#7878a0;font-family:Consolas,monospace;margin-top:6px;line-height:1.5;">
+    Set monthly budget in USD. Configure alarm thresholds (75%, 90%, 95% or any custom %). Get warned before you overspend.
+  </div>
+</div>
+
+<div style="flex:1;min-width:250px;padding:16px;border-radius:10px;background:linear-gradient(135deg,#00f5ff11,#00f5ff05);border:1px solid #00f5ff44;">
+  <div style="font-family:Consolas,monospace;font-size:13px;font-weight:700;color:#00f5ff;text-shadow:0 0 6px #00f5ff44;">^ Optimization Tips</div>
+  <div style="font-size:12px;color:#7878a0;font-family:Consolas,monospace;margin-top:6px;line-height:1.5;">
+    Agent advises when to switch to local Ollama, when context is bloated, and which providers cost more. Smart routing guidance.
+  </div>
+</div>
+
+</div>
+
+<br/>
+
+<div align="center" style="background:#0a0a1e;border-radius:12px;padding:16px;border:1px solid #22c55e33;">
+<pre style="background:transparent;color:#c0c0e0;font-family:Consolas,monospace;font-size:12px;margin:0;line-height:1.8;text-align:left;display:inline-block;">
+<span style="color:#22c55e;font-weight:700;">Dashboard Features:</span>
+
+  <span style="color:#f59e0b;">Used / Saved / Cost</span> — big number cards with period selector
+  <span style="color:#00f5ff;">Provider Breakdown</span> — per-provider token usage and cost table
+  <span style="color:#ff00ff;">Model Breakdown</span> — per-model usage and cost table
+  <span style="color:#22c55e;">Daily Chart</span> — 7-day bar chart of token consumption
+  <span style="color:#ff6600;">Budget Settings</span> — monthly USD cap + configurable alarm thresholds
+  <span style="color:#6366f1;">Recent Activity</span> — last API calls with provider, model, tokens, cost
+  <span style="color:#ef4444;">Alarm Banner</span> — flashing red alert when budget threshold is crossed
+</pre>
+</div>
+
+</div>
 
 ---
+
+<!-- ARCHITECTURE -->
 <h2 align="center" style="font-family:'Segoe UI',Arial,sans-serif;font-size:24px;font-weight:800;background:linear-gradient(90deg,#ff6600,#ff00ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:2px;">🏗️ ARCHITECTURE</h2>
 
 <div align="center" style="background:#0a0a1e;border-radius:12px;padding:20px;border:1px solid #ff00ff33;margin:20px 0;overflow-x:auto;">
@@ -388,7 +445,7 @@
 ├── <span style="color:#00f5ff;">cli/</span>              <span style="color:#6060a0;"># CLI entry point</span>
 ├── <span style="color:#00f5ff;">components/</span>
 │   ├── <span style="color:#00f5ff;">content/</span>        <span style="color:#6060a0;"># Panels: Chat, AutoPilot, Ollama, Skills, Security...</span>
-│   ├── <span style="color:#00f5ff;">mobile/</span>          <span style="color:#6060a0;"># MobileBottomNav (8 tabs)</span>
+│   ├── <span style="color:#00f5ff;">mobile/</span>          <span style="color:#6060a0;"># MobileBottomNav (10 tabs)</span>
 │   └── <span style="color:#00f5ff;">sidebar/</span>         <span style="color:#6060a0;"># Sidebar thread tree</span>
 ├── <span style="color:#ff00ff;">server/</span>
 │   ├── <span style="color:#22c55e;">agent/</span>           <span style="color:#ff6600;font-weight:700;">★ Agentic Framework</span>
@@ -404,7 +461,10 @@
 │   │   ├── <span style="color:#ff6600;">modexMemory.ts</span>    <span style="color:#ff6600;font-weight:700;"># ★ MODEX persistent memory</span>
 │   │   ├── <span style="color:#ff6600;">modexBoss.ts</span>      <span style="color:#ff6600;font-weight:700;"># ★ MODEX HOD brain</span>
 │   │   ├── <span style="color:#ff6600;">modexOrchestrator.ts</span> <span style="color:#ff6600;font-weight:700;"># ★ MODEX compliance gate</span>
-│   │   └── <span style="color:#ff6600;">modexApi.ts</span>      <span style="color:#ff6600;font-weight:700;"># ★ MODEX REST API</span>
+│   │   ├── <span style="color:#ff6600;">modexApi.ts</span>      <span style="color:#ff6600;font-weight:700;"># ★ MODEX REST API</span>
+│   │   ├── <span style="color:#22c55e;">tokenPricing.ts</span>    <span style="color:#22c55e;font-weight:700;"># ★ Per-model pricing table</span>
+│   │   ├── <span style="color:#22c55e;">tokenAccountant.ts</span> <span style="color:#22c55e;font-weight:700;"># ★ Token tracker + budget alarms</span>
+│   │   └── <span style="color:#22c55e;">tokenAccountantApi.ts</span> <span style="color:#22c55e;font-weight:700;"># ★ Token REST API</span>
 │   ├── <span style="color:#22c55e;">agentRouter.ts</span>    <span style="color:#6060a0;"># 17 agent API endpoints</span>
 │   ├── <span style="color:#22c55e;">ollamaRouter.ts</span>   <span style="color:#6060a0;"># Ollama backend proxy</span>
 │   ├── <span style="color:#22c55e;">sentinelRouter.ts</span> <span style="color:#6060a0;"># Security agents</span>

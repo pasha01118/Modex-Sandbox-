@@ -9,6 +9,8 @@ import { createAuthSession } from './authMiddleware.js'
 import { createDirectoryListingHtml, createTextEditorHtml, decodeBrowsePath, getLocalDirectoryListing, isTextEditableFile, normalizeLocalPath } from './localBrowseUi.js'
 import { WebSocketServer, type WebSocket } from 'ws'
 import { modexRouter } from './agent/modexApi.js'
+import { tokenAccountantRouter } from './agent/tokenAccountantApi.js'
+import { tokenAccountant } from './agent/tokenAccountant.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const distDir = join(__dirname, '..', 'dist')
@@ -89,7 +91,11 @@ export function createServer(options: ServerOptions = {}): ServerInstance {
   // 3. MODEX HOD agent API
   app.use('/api/modex', modexRouter)
 
-  // 3. Serve local images referenced in markdown (desktop parity for absolute image paths)
+  // 4. Token Accountant API
+  app.use('/api/token-accountant', tokenAccountantRouter)
+  tokenAccountant.init()
+
+  // 5. Serve local images referenced in markdown (desktop parity for absolute image paths)
   app.get('/codex-local-image', (req, res) => {
     const rawPath = typeof req.query.path === 'string' ? req.query.path : ''
     const localPath = normalizeLocalImagePath(rawPath)

@@ -1,6 +1,7 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { request as httpRequest } from 'node:http'
 import { request as httpsRequest } from 'node:https'
+import { eventBus } from './agent/eventBus.js'
 
 type ResponsesApiInput = {
   id?: string
@@ -465,6 +466,29 @@ function copyProxyHeaders(upstreamHeaders: IncomingMessage['headers']): Record<s
   return headers
 }
 
+function detectProviderFromEndpoint(endpoint: string): string {
+  const lower = endpoint.toLowerCase()
+  if (lower.includes('openrouter')) return 'openrouter'
+  if (lower.includes('opencode') || lower.includes('zen')) return 'zen'
+  return 'codex'
+}
+
+function emitTokenUsage(translated: Record<string, unknown>, model: string, provider: string) {
+  const usage = translated?.usage as Record<string, number> | undefined
+  if (!usage) return
+  const inputTokens = usage.input_tokens ?? 0
+  const outputTokens = usage.output_tokens ?? 0
+  if (inputTokens === 0 && outputTokens === 0) return
+  eventBus.emit('token:used', {
+    provider,
+    model,
+    inputTokens,
+    outputTokens,
+    source: 'thread-chat',
+    cached: false,
+  })
+}
+
 function hasToolOutputsInInput(input: string | ResponsesApiInput[]): boolean {
   if (!Array.isArray(input)) return false
   return input.some((item) => item?.type === 'function_call_output' || item?.type === 'computer_call_output')
@@ -577,6 +601,8 @@ export function handleUnifiedResponsesProxyRequest(
               return
             }
             const translated = chatCompletionToResponsesFormat(upstreamPayload, parsedBody.model)
+            const provider = detectProviderFromEndpoint(upstreamUrl.toString())
+            emitTokenUsage(translated, parsedBody.model, provider)
             if (isStreaming) {
               sendSyntheticStreamingCompletion(res, translated)
             } else {

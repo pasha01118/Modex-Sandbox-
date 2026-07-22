@@ -1,5 +1,6 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { totalmem, cpus, platform, arch } from 'node:os'
+import { eventBus } from './agent/eventBus.js'
 
 const OLLAMA_BASE = 'http://127.0.0.1:11434'
 
@@ -191,6 +192,18 @@ export async function handleOllamaRoutes(
         return true
       }
       const data = await ollamaRes.json()
+      const inputTokens = data.prompt_eval_count ?? 0
+      const outputTokens = data.eval_count ?? 0
+      if (inputTokens > 0 || outputTokens > 0) {
+        eventBus.emit('token:used', {
+          provider: 'ollama',
+          model,
+          inputTokens,
+          outputTokens,
+          source: 'task-planner',
+          cached: false,
+        })
+      }
       setJson(res, 200, data)
       return true
     }

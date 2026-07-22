@@ -58,6 +58,11 @@ const router = createRouter({
       component: EmptyRouteView,
     },
     {
+      path: '/token-accountant',
+      name: 'token-accountant',
+      component: EmptyRouteView,
+    },
+    {
       path: '/new-thread',
       redirect: { name: 'home' },
     },
