@@ -13,9 +13,6 @@
   "bugs": {
     "url": "https://github.com/pasha01118/Modex-Sandbox-/issues"
   },
-  "pnpm": {
-    "onlyBuiltDependencies": ["esbuild", "@firebase/util", "node-pty", "protobufjs"]
-  },
   "publishConfig": {
     "access": "public"
   },

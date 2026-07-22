@@ -768,6 +768,28 @@
 
 ---
 
+<!-- CHANGELOG -->
+<div style="background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);padding:30px 20px;border-radius:16px;border:1px solid #00f5ff44;box-shadow:0 0 40px #00f5ff22,inset 0 0 60px #00000044;margin:20px 0;">
+
+<h2 align="center" style="font-family:'Segoe UI',Arial,sans-serif;font-size:26px;font-weight:800;background:linear-gradient(90deg,#00f5ff,#ff00ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:2px;">
+  📋 CHANGELOG
+</h2>
+
+<div style="background:#0a0a1e;border-radius:12px;padding:16px;border:1px solid #00f5ff33;">
+<pre style="background:transparent;color:#c0c0e0;font-family:Consolas,monospace;font-size:12px;margin:0;line-height:1.8;text-align:left;display:inline-block;">
+<span style="color:#00f5ff;font-weight:700;">2026-07-22 — Termux Installation Fix</span>
+
+  <span style="color:#ff6600;">fix:</span> pnpm v11.15+ deprecation of <span style="color:#ff00ff;">pnpm.onlyBuiltDependencies</span> in package.json
+  <span style="color:#ff6600;">fix:</span> Moved build approval config to <span style="color:#ff00ff;">pnpm-workspace.yaml</span> (new pnpm standard)
+  <span style="color:#ff6600;">fix:</span> Removed invalid <span style="color:#ff00ff;">allowBuilds</span> block from <span style="color:#ff00ff;">pnpm-workspace.yaml</span>
+  <span style="color:#ff6600;">fix:</span> <span style="color:#ff00ff;">run.sh</span> now runs targeted <span style="color:#22c55e;">pnpm rebuild</span> for each build-required package
+  <span style="color:#22c55e;">result:</span> <span style="color:#c0c0e0;">Zero-config install on Termux with latest pnpm. No more</span>
+          <span style="color:#c0c0e0;">ERR_PNPM_IGNORED_BUILDS or manual approve-builds step.</span>
+</pre>
+</div>
+
+</div>
+
 <!-- FOOTER -->
 <div align="center" style="background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);padding:20px;border-radius:16px;border:1px solid #ff00ff22;box-shadow:0 0 30px #ff00ff11;margin:20px 0;">
 

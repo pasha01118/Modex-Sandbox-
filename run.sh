@@ -66,8 +66,8 @@ fi
 echo "[2/4] Installing dependencies..."
 retry_install() {
   pnpm install 2>&1 || {
-    warn "pnpm install had issues — trying to approve builds..."
-    pnpm rebuild 2>/dev/null || true
+    warn "pnpm install had issues — retrying after build approval..."
+    pnpm rebuild esbuild '@firebase/util' node-pty protobufjs 2>/dev/null || true
     pnpm install --no-frozen-lockfile 2>&1 || {
       err "Dependency installation failed."
       err "Try: rm -rf node_modules && pnpm install"
