@@ -147,16 +147,34 @@
 
 <!-- CLEAN UNINSTALL -->
 <div align="center" style="margin:20px 0;">
-  <details style="display:inline-block;max-width:600px;background:#1a1a2e;border-radius:10px;border:1px solid #ff336644;padding:0;color:#c0c0e0;font-family:Consolas,monospace;font-size:13px;text-align:left;">
+  <details style="display:inline-block;max-width:650px;background:#1a1a2e;border-radius:10px;border:1px solid #ff336644;padding:0;color:#c0c0e0;font-family:Consolas,monospace;font-size:13px;text-align:left;">
     <summary style="padding:12px 20px;cursor:pointer;color:#ff3366;font-weight:700;text-shadow:0 0 6px #ff336644;letter-spacing:1px;">🧹 Clean Uninstall</summary>
-    <pre style="background:#0a0a1e;color:#c0c0e0;font-family:Consolas,monospace;font-size:13px;padding:16px 20px;margin:0;overflow-x:auto;white-space:pre-wrap;border-radius:0 0 10px 10px;border-top:1px solid #ff336644;">
-<span style="color:#22c55e;">rm -rf ~/.codex</span>          <span style="color:#6060a0;"># config, sessions, cached data</span>
-<span style="color:#22c55e;">rm -rf ~/.codexui</span>         <span style="color:#6060a0;"># UI state and logs</span>
-<span style="color:#22c55e;">rm -rf Modex-Sandbox-</span>     <span style="color:#6060a0;"># app folder (run from parent dir)</span>
+    <pre style="background:#0a0a1e;color:#c0c0e0;font-family:Consolas,monospace;font-size:12px;padding:16px 20px;margin:0;overflow-x:auto;white-space:pre-wrap;border-radius:0 0 10px 10px;border-top:1px solid #ff336644;">
+<span style="color:#ef4444;font-weight:700;"># Stop running servers first</span>
+<span style="color:#22c55e;">pkill -f "codexapp"</span>         <span style="color:#6060a0;"># stop MODEX server</span>
+<span style="color:#22c55e;">tmux kill-server</span> 2>/dev/null  <span style="color:#6060a0;"># kill tmux sessions</span>
+
+<span style="color:#ef4444;font-weight:700;"># Remove app data (all state, sessions, agents, configs)</span>
+<span style="color:#22c55e;">rm -rf ~/.codex</span>             <span style="color:#6060a0;"># all MODEX data (50+ files/dirs)</span>
+
+<span style="color:#ef4444;font-weight:700;"># Remove app folder</span>
+<span style="color:#22c55e;">rm -rf Modex-Sandbox-</span>       <span style="color:#6060a0;"># app source + build artifacts</span>
+
+<span style="color:#ef4444;font-weight:700;"># Clean temp files (optional)</span>
+<span style="color:#22c55e;">rm -rf /tmp/codex-*</span>         <span style="color:#6060a0;"># temp media, uploads, schemas</span>
+<span style="color:#22c55e;">rm -rf /tmp/codexui-*</span>       <span style="color:#6060a0;"># review patches, account ops</span>
+
+<span style="color:#ef4444;font-weight:700;"># Remove Composio (optional, ~120MB)</span>
+<span style="color:#22c55e;">rm -rf ~/.composio</span>          <span style="color:#6060a0;"># Composio CLI + tools</span>
+
+<span style="color:#ef4444;font-weight:700;"># Remove global npm installs (optional)</span>
+<span style="color:#22c55e;">npm uninstall -g @openai/codex</span>
     </pre>
     <div style="padding:10px 20px;color:#6060a0;font-size:11px;border-top:1px solid #ff336622;">
-      Removes app folder, all Codex config, saved sessions, cached data, and UI state.
+      Removes all MODEX data including: auth tokens, sessions, agent configs, token usage,
+      task queue, memory, learning data, encrypted vaults, SQLite databases, and skills.
       If you set a custom <span style="color:#ff6600;">$CODEX_HOME</span>, use that path instead of <span style="color:#22c55e;">~/.codex</span>.
+      Does NOT remove <span style="color:#22c55e;">~/.shared-skills</span> (shared across projects).
     </div>
   </details>
 </div>
@@ -725,10 +743,26 @@
 <h2 align="center" style="font-family:'Segoe UI',Arial,sans-serif;font-size:24px;font-weight:800;background:linear-gradient(90deg,#ef4444,#ff00ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:2px;">🧹 CLEAN UNINSTALL</h2>
 
 <div align="center" style="background:#0a0a1e;border-radius:12px;padding:4px;border:1px solid #ef444433;margin:20px 0;display:inline-block;">
-<pre style="background:transparent;color:#c0c0e0;font-family:Consolas,monospace;font-size:13px;padding:16px 24px;margin:0;text-align:left;">
-<span style="color:#ef4444;">cd ..</span>
-<span style="color:#ef4444;">rm -rf Modex-Sandbox-</span>
-<span style="color:#ef4444;">rm -rf ~/.codex</span>          <span style="color:#6060a0;"># config, sessions, agent tasks, memory</span>
+<pre style="background:transparent;color:#c0c0e0;font-family:Consolas,monospace;font-size:12px;padding:16px 24px;margin:0;text-align:left;">
+<span style="color:#ef4444;font-weight:700;"># Step 1: Stop all running processes</span>
+<span style="color:#22c55e;">pkill -f "codexapp"</span>           <span style="color:#6060a0;"># stop MODEX server</span>
+<span style="color:#22c55e;">tmux kill-server</span> 2>/dev/null    <span style="color:#6060a0;"># kill tmux sessions</span>
+
+<span style="color:#ef4444;font-weight:700;"># Step 2: Remove all MODEX data</span>
+<span style="color:#22c55e;">rm -rf ~/.codex</span>               <span style="color:#6060a0;"># auth, sessions, DBs, agents, configs, vaults</span>
+
+<span style="color:#ef4444;font-weight:700;"># Step 3: Remove app source</span>
+<span style="color:#22c55e;">rm -rf Modex-Sandbox-</span>         <span style="color:#6060a0;"># git repo + build artifacts</span>
+
+<span style="color:#ef4444;font-weight:700;"># Step 4: Clean temp files</span>
+<span style="color:#22c55e;">rm -rf /tmp/codex-*</span>           <span style="color:#6060a0;"># temp media, uploads, schemas</span>
+<span style="color:#22c55e;">rm -rf /tmp/codexui-*</span>         <span style="color:#6060a0;"># review patches, account ops</span>
+
+<span style="color:#ef4444;font-weight:700;"># Step 5: Remove Composio (optional)</span>
+<span style="color:#22c55e;">rm -rf ~/.composio</span>            <span style="color:#6060a0;"># Composio CLI (~120MB)</span>
+
+<span style="color:#ef4444;font-weight:700;"># Step 6: Uninstall global CLI (optional)</span>
+<span style="color:#22c55e;">npm uninstall -g @openai/codex</span>
 </pre>
 </div>
 
