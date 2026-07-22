@@ -550,11 +550,9 @@ describe('ToolRegistry - Live Penetration Tests', () => {
       .rejects.toThrow('Access denied')
   })
 
-  it('BLOCKED_PATHS gap: /etc parent dir is NOT blocked', async () => {
-    const result = await toolRegistry.execute('searchCode', { pattern: 'localhost', path: '/etc' })
-    expect(typeof result).toBe('string')
-    // /etc contains /etc/shadow and /etc/passwd but is not blocked
-    // This is a WEAKNESS - /etc should be added to BLOCKED_PATHS
+  it('rejects searchCode on /etc (BLOCKED_PATHS now includes parent dir)', async () => {
+    await expect(toolRegistry.execute('searchCode', { pattern: 'localhost', path: '/etc' }))
+      .rejects.toThrow('Access denied')
   })
 
   it('blocks writing to /etc/shadow via writeJson tool', async () => {

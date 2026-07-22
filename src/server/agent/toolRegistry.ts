@@ -1,4 +1,4 @@
-import { execSync, execFileSync } from 'node:child_process'
+import { execFileSync } from 'node:child_process'
 import { readFileSync, writeFileSync, existsSync } from 'node:fs'
 import { readdir } from 'node:fs/promises'
 import { join, relative, resolve, isAbsolute } from 'node:path'
@@ -20,7 +20,7 @@ interface ToolDefinition {
 
 const tools = new Map<string, ToolDefinition>()
 
-const BLOCKED_PATHS = ['/etc/shadow', '/etc/passwd', '/proc', '/sys']
+const BLOCKED_PATHS = ['/etc', '/root', '/proc', '/sys']
 
 function isPathSafe(filePath: string): boolean {
   const resolved = resolve(filePath)
@@ -29,15 +29,6 @@ function isPathSafe(filePath: string): boolean {
   }
   if (resolved.includes('/../')) return false
   return true
-}
-
-function run(cmd: string, cwd?: string): string {
-  return execSync(cmd, {
-    cwd: cwd || process.cwd(),
-    timeout: 30_000,
-    encoding: 'utf-8',
-    maxBuffer: 10 * 1024 * 1024,
-  }).trim()
 }
 
 function runSafe(command: string, args: string[], cwd?: string): string {
@@ -49,8 +40,21 @@ function runSafe(command: string, args: string[], cwd?: string): string {
   }).trim()
 }
 
-function shellEscape(s: string): string {
-  return s.replace(/[^a-zA-Z0-9_.,%@/:=-]/g, '\\$&')
+function parseCommand(cmd: string): { command: string; args: string[] } {
+  const tokens: string[] = []
+  let current = ''
+  let inQuote = false
+  for (const ch of cmd) {
+    if (ch === '"') { inQuote = !inQuote; continue }
+    if (ch === ' ' && !inQuote) {
+      if (current) { tokens.push(current); current = '' }
+      continue
+    }
+    current += ch
+  }
+  if (current) tokens.push(current)
+  if (tokens.length === 0) throw new Error('Empty command')
+  return { command: tokens[0]!, args: tokens.slice(1) }
 }
 
 function define(t: ToolDefinition): void {
@@ -59,13 +63,14 @@ function define(t: ToolDefinition): void {
 
 define({
   name: 'executeCommand',
-  description: 'Run a shell command and return its output',
+  description: 'Run a command and return its output (piped shell features disabled for security)',
   parameters: [
-    { name: 'command', type: 'string', description: 'The shell command to execute', required: true },
+    { name: 'command', type: 'string', description: 'Command with arguments', required: true },
     { name: 'cwd', type: 'string', description: 'Working directory', required: false },
   ],
   async execute(params) {
-    return run(params.command, params.cwd)
+    const parsed = parseCommand(params.command)
+    return runSafe(parsed.command, parsed.args, params.cwd)
   },
 })
 
@@ -121,7 +126,7 @@ define({
     { name: 'cwd', type: 'string', description: 'Git repository path', required: false },
   ],
   async execute(params) {
-    return run('git status --short', params.cwd)
+    return runSafe('git', ['status', '--short'], params.cwd)
   },
 })
 
@@ -133,7 +138,7 @@ define({
     { name: 'cwd', type: 'string', description: 'Git repository path', required: false },
   ],
   async execute(params) {
-    run('git add -A', params.cwd)
+    runSafe('git', ['add', '-A'], params.cwd)
     return runSafe('git', ['commit', '-m', params.message], params.cwd)
   },
 })

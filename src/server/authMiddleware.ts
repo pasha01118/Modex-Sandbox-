@@ -307,6 +307,20 @@ export function createAuthSession(password: string): AuthSession {
       return
     }
 
+    // Handle logout
+    if (req.method === 'POST' && req.path === '/auth/logout') {
+      const cookies = parseCookies(req.headers.cookie)
+      const token = cookies[TOKEN_COOKIE]
+      if (token) {
+        validTokens.delete(token)
+        tryPersistSessions(validTokens)
+      }
+      const clearCookie = buildSessionCookie('', 0)
+      res.setHeader('Set-Cookie', clearCookie)
+      res.json({ ok: true })
+      return
+    }
+
     // No valid session — serve login page
     res.setHeader('Content-Type', 'text/html; charset=utf-8')
     res.status(200).send(LOGIN_PAGE_HTML)

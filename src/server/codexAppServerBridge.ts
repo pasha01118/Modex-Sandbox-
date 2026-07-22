@@ -4702,9 +4702,10 @@ function readTokenResponseString(payload: Record<string, unknown> | null, ...key
 export async function refreshChatgptAuthTokensForExternalAuth(
   params: ChatgptAuthTokensRefreshParams = {},
 ): Promise<ChatgptAuthTokensRefreshResponse> {
-  const authPath = getCodexAuthPath()
-  const raw = await readFile(authPath, 'utf8')
-  const auth = JSON.parse(raw) as CodexAuth
+  const auth = readCodexAuthFileSync()
+  if (!auth) {
+    throw new Error('No ChatGPT refresh token is available. Please sign in again.')
+  }
   const currentRefreshToken = auth.tokens?.refresh_token?.trim() ?? ''
   if (!currentRefreshToken) {
     throw new Error('No ChatGPT refresh token is available. Please sign in again.')
