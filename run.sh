@@ -63,20 +63,25 @@ else
 fi
 
 # ── 2. Install dependencies ──────────────────────
-if [ ! -d node_modules ]; then
-  echo "[2/4] Installing dependencies..."
+echo "[2/4] Installing dependencies..."
+retry_install() {
   pnpm install 2>&1 || {
     warn "pnpm install had issues — trying to approve builds..."
-    pnpm approve-builds 2>/dev/null || true
-    pnpm install 2>&1 || {
-      err "Dependency installation failed. Try: pnpm approve-builds && pnpm install"
+    pnpm rebuild 2>/dev/null || true
+    pnpm install --no-frozen-lockfile 2>&1 || {
+      err "Dependency installation failed."
+      err "Try: rm -rf node_modules && pnpm install"
       exit 1
     }
   }
-  ok "Dependencies installed"
+}
+if [ ! -d node_modules ]; then
+  retry_install
 else
-  info "Dependencies already installed"
+  info "node_modules exists — refreshing to apply build approvals..."
+  retry_install
 fi
+ok "Dependencies installed"
 
 # ── 3. Optional: Setup Ollama ────────────────────
 if ! command -v ollama &>/dev/null; then
@@ -113,8 +118,21 @@ fi
 # ── 4. Build ──────────────────────────────────────
 if [ ! -f dist-cli/index.js ]; then
   echo "[3/4] Building app..."
-  pnpm run build
-  ok "Build complete"
+  if pnpm run build 2>&1; then
+    ok "Build complete"
+  else
+    warn "Build failed — stale node_modules; reinstalling..."
+    rm -rf node_modules
+    pnpm install --no-frozen-lockfile 2>&1 || {
+      err "Reinstall failed. Try: rm -rf node_modules && pnpm install && pnpm run build"
+      exit 1
+    }
+    pnpm run build 2>&1 || {
+      err "Build failed after reinstall."
+      exit 1
+    }
+    ok "Build complete"
+  fi
 else
   info "Already built"
 fi
