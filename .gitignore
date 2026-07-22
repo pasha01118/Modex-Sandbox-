@@ -10,6 +10,7 @@ test-results/
 package-lock.json
 pnpm-lock.yaml
 .codex/
+.env
 .env.local
 .omx/
 

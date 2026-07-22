@@ -445,7 +445,7 @@ describe('Codex CLI availability', () => {
 
     await state.refreshAll({ awaitAncillaryRefreshes: true })
 
-    expect(state.codexCliMissingError.value).toBe('Codex CLI not found. Install @openai/codex or set CODEXUI_CODEX_COMMAND.')
+    expect(state.codexCliMissingError.value).toBe('MODEX AI requires the Codex CLI. Install @openai/codex or set CODEXUI_CODEX_COMMAND.')
   })
 
   it('clears a previous Codex CLI missing banner when a later refresh fails for another reason', async () => {
@@ -457,7 +457,7 @@ describe('Codex CLI availability', () => {
     const state = useDesktopState()
 
     await state.refreshAll({ awaitAncillaryRefreshes: true })
-    expect(state.codexCliMissingError.value).toBe('Codex CLI not found. Install @openai/codex or set CODEXUI_CODEX_COMMAND.')
+    expect(state.codexCliMissingError.value).toBe('MODEX AI requires the Codex CLI. Install @openai/codex or set CODEXUI_CODEX_COMMAND.')
 
     await state.refreshAll({ awaitAncillaryRefreshes: true })
     expect(state.error.value).toBe('Connection lost')

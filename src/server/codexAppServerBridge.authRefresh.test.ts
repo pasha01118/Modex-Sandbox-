@@ -3,6 +3,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { refreshChatgptAuthTokensForExternalAuth } from './codexAppServerBridge'
+import { secretsVault } from './secretsVault.js'
 
 const originalCodexHome = process.env.CODEX_HOME
 const originalRefreshUrlOverride = process.env.CODEX_REFRESH_TOKEN_URL_OVERRIDE
@@ -88,7 +89,7 @@ describe('ChatGPT auth token refresh', () => {
       chatgptPlanType: 'pro',
     })
 
-    const updatedAuth = JSON.parse(await readFile(join(codexHome, 'auth.json'), 'utf8')) as {
+    const updatedAuth = secretsVault.readSecretFileWithMigration<Record<string, unknown>>(join(codexHome, 'auth.json'), {}) as {
       auth_mode?: string
       last_refresh?: number
       tokens?: Record<string, string>

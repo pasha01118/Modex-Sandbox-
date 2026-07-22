@@ -210,8 +210,9 @@ define({
     { name: 'name', type: 'string', description: 'Environment variable name', required: true },
   ],
   async execute(params) {
-    const blocked = ['OPENAI_API_KEY', 'ANTHROPIC_API_KEY', 'CODEX_AUTH_TOKEN', 'CODEX_PASSWORD', 'AWS_SECRET_ACCESS_KEY', 'SECRET_KEY']
-    if (blocked.includes(params.name)) return '(redacted)'
+    // Block sensitive env vars using regex pattern
+    const SENSITIVE_ENV_REGEX = /KEY|TOKEN|SECRET|PASSWORD|AUTH|CREDENTIAL|API|_KEY|_SECRET|_TOKEN|_PASS/i
+    if (SENSITIVE_ENV_REGEX.test(params.name)) return '(redacted)'
     return process.env[params.name] || '(not set)'
   },
 })

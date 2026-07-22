@@ -18,7 +18,33 @@ import { handleSentinelRoutes } from './sentinelRouter.js'
 import { handleOllamaRoutes } from './ollamaRouter.js'
 import { handleAgentRoutes } from './agentRouter.js'
 import { defaultAgents } from './agent/defaultAgents.js'
+import { secretsVault } from './secretsVault.js'
 import { orchestrator } from './agent/agentOrchestrator.js'
+
+// Safe environment variables for child processes (whitelist approach)
+function getSafeEnv(): Record<string, string | undefined> {
+  return {
+    PATH: process.env.PATH,
+    HOME: process.env.HOME,
+    NODE_ENV: process.env.NODE_ENV,
+    CODEX_HOME: process.env.CODEX_HOME,
+    SHELL: process.env.SHELL,
+    USER: process.env.USER,
+    LANG: process.env.LANG,
+    TERM: process.env.TERM,
+    TMPDIR: process.env.TMPDIR,
+    XDG_CONFIG_HOME: process.env.XDG_CONFIG_HOME,
+    XDG_DATA_HOME: process.env.XDG_DATA_HOME,
+    XDG_CACHE_HOME: process.env.XDG_CACHE_HOME,
+    // Node.js
+    NODE_OPTIONS: process.env.NODE_OPTIONS,
+    npm_config_registry: process.env.npm_config_registry,
+    // Git
+    GIT_TERMINAL_PROMPT: process.env.GIT_TERMINAL_PROMPT,
+    GIT_SSH_COMMAND: process.env.GIT_SSH_COMMAND,
+    SSH_AUTH_SOCK: process.env.SSH_AUTH_SOCK,
+  }
+}
 import { buildAppServerArgs } from './appServerRuntimeConfig.js'
 import { callRpcWithRateLimitDecodeRecovery } from './rateLimitDecodeRecovery.js'
 import { handleReviewRoutes } from './reviewGit.js'
@@ -2744,7 +2770,7 @@ function buildInstalledComposioInvocation(args: string[]): ComposioCliInvocation
 function probeComposioInvocation(invocation: ComposioCliInvocation): { available: boolean; cliVersion: string; output: string } {
   const probe = spawnSync(invocation.command, invocation.args, {
     encoding: 'utf8',
-    env: process.env,
+    env: getSafeEnv(),
     windowsHide: true,
   })
   const output = `${probe.stdout ?? ''}${probe.stderr ?? ''}`.trim()
@@ -3101,7 +3127,7 @@ async function installComposioCli(): Promise<ComposioInstallResult> {
   const args = ['-lc', `curl -fsSL ${installScriptUrl} | bash`]
   const invocation = getSpawnInvocation(command, args)
   const env = {
-    ...process.env,
+    ...getSafeEnv(),
     COMPOSIO_INSTALL_DIR: process.env.COMPOSIO_INSTALL_DIR?.trim() || join(homedir(), '.composio'),
   }
   const result = spawnSync(invocation.command, invocation.args, {
@@ -4594,6 +4620,19 @@ function getCodexAuthPath(): string {
   return join(getCodexHomeDir(), 'auth.json')
 }
 
+function readCodexAuthFileSync(): CodexAuth | null {
+  try {
+    const content = secretsVault.readSecretFileWithMigration<CodexAuth>(getCodexAuthPath(), {})
+    return content
+  } catch {
+    return null
+  }
+}
+
+function writeCodexAuthFileSync(auth: CodexAuth): void {
+  secretsVault.writeSecretFileWithMigration(getCodexAuthPath(), auth)
+}
+
 type CodexAuth = {
   auth_mode?: string
   last_refresh?: number
@@ -4728,7 +4767,7 @@ export async function refreshChatgptAuthTokensForExternalAuth(
       ...(nextIdToken ? { id_token: nextIdToken } : {}),
     },
   }
-  await writeFile(authPath, JSON.stringify(nextAuth, null, 2), { encoding: 'utf8', mode: 0o600 })
+  writeCodexAuthFileSync(nextAuth)
 
   return {
     accessToken,
@@ -4739,8 +4778,8 @@ export async function refreshChatgptAuthTokensForExternalAuth(
 
 async function readCodexAuth(): Promise<{ accessToken: string; accountId?: string } | null> {
   try {
-    const raw = await readFile(getCodexAuthPath(), 'utf8')
-    const auth = JSON.parse(raw) as CodexAuth
+    const auth = readCodexAuthFileSync()
+    if (!auth) return null
     const token = auth.tokens?.access_token
     if (!token) return null
     return { accessToken: token, accountId: auth.tokens?.account_id ?? undefined }
@@ -4751,9 +4790,8 @@ async function readCodexAuth(): Promise<{ accessToken: string; accountId?: strin
 
 function hasUsableCodexAuthSync(): boolean {
   try {
-    const raw = readFileSync(getCodexAuthPath(), 'utf8')
-    const auth = JSON.parse(raw) as CodexAuth
-    return Boolean(auth.tokens?.access_token?.trim())
+    const auth = readCodexAuthFileSync()
+    return Boolean(auth?.tokens?.access_token?.trim())
   } catch {
     return false
   }
@@ -6292,7 +6330,7 @@ function curlImpersonatePost(
     }
     args.push('--data-binary', '@-')
     const proc = spawn('curl-impersonate-chrome', args, {
-      env: { ...process.env, CURL_IMPERSONATE: 'chrome116' },
+      env: { ...getSafeEnv(), CURL_IMPERSONATE: 'chrome116' },
       stdio: ['pipe', 'pipe', 'pipe'],
     })
     const chunks: Buffer[] = []
@@ -6489,7 +6527,7 @@ class AppServerProcess {
     this.activeConfigSignature = this.getAppServerConfigSignature(config)
     const invocation = getSpawnInvocation(this.getCodexCommand(), config.args)
     const spawnEnv = Object.keys(config.env).length > 0
-      ? { ...process.env, ...config.env }
+      ? { ...getSafeEnv(), ...config.env }
       : undefined
     const proc = spawn(invocation.command, invocation.args, { stdio: ['pipe', 'pipe', 'pipe'], ...(spawnEnv ? { env: spawnEnv } : {}) })
     this.process = proc

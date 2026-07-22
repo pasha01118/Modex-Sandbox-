@@ -4,6 +4,7 @@ import type { IncomingMessage } from 'node:http'
 import { homedir } from 'node:os'
 import { dirname, join } from 'node:path'
 import type { RequestHandler, Request, Response, NextFunction } from 'express'
+import { secretsVault } from './secretsVault.js'
 
 const TOKEN_COOKIE = 'portal_session'
 const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000 // 7 days (reduced from 30)
@@ -109,11 +110,10 @@ function getSessionStorePath(): string {
 
 function readPersistedSessions(): Map<string, number> {
   const sessionStorePath = getSessionStorePath()
-  if (!existsSync(sessionStorePath)) return new Map()
+  const parsed = secretsVault.readSecretFileWithMigration<PersistedAuthState>(sessionStorePath, { tokens: [] })
+  if (!parsed) return new Map()
 
   try {
-    const raw = readFileSync(sessionStorePath, 'utf8')
-    const parsed = JSON.parse(raw) as PersistedAuthState
     const now = Date.now()
     const sessions = new Map<string, number>()
     for (const entry of parsed.tokens ?? []) {
@@ -136,9 +136,7 @@ function persistSessions(validTokens: Map<string, number>): void {
     .sort((left, right) => right[1] - left[1])
     .slice(0, MAX_PERSISTED_TOKENS)
     .map(([value, expiresAt]) => ({ value, expiresAt }))
-  const tmpPath = `${sessionStorePath}.tmp`
-  writeFileSync(tmpPath, `${JSON.stringify({ tokens }, null, 2)}\n`, { encoding: 'utf8', mode: 0o600 })
-  renameSync(tmpPath, sessionStorePath)
+  secretsVault.writeSecretFileWithMigration(sessionStorePath, { tokens })
 }
 
 function tryPersistSessions(validTokens: Map<string, number>): void {
@@ -160,16 +158,18 @@ function pruneExpiredSessions(validTokens: Map<string, number>): boolean {
   return changed
 }
 
-function buildSessionCookie(token: string, expiresAt: number): string {
+function buildSessionCookie(token: string, expiresAt: number, isHttps: boolean = false): string {
   const maxAgeSeconds = Math.max(0, Math.floor((expiresAt - Date.now()) / 1000))
-  return [
+  const parts = [
     `${TOKEN_COOKIE}=${token}`,
     'Path=/',
     'HttpOnly',
     'SameSite=Lax',
     `Max-Age=${String(maxAgeSeconds)}`,
     `Expires=${new Date(expiresAt).toUTCString()}`,
-  ].join('; ')
+  ]
+  if (isHttps) parts.push('Secure')
+  return parts.join('; ')
 }
 
 function isAuthorizedByRequestLike(
@@ -297,35 +297,14 @@ export function createAuthSession(password: string): AuthSession {
           const expiresAt = Date.now() + SESSION_TTL_MS
           validTokens.set(token, expiresAt)
           tryPersistSessions(validTokens)
-          res.setHeader('Set-Cookie', buildSessionCookie(token, expiresAt))
+          const isHttps = req.headers['x-forwarded-proto'] === 'https' || req.protocol === 'https'
+          res.setHeader('Set-Cookie', buildSessionCookie(token, expiresAt, isHttps))
           res.json({ ok: true })
         } catch {
           res.status(500).json({ error: 'Failed to create login session' })
         }
       })
       return
-    }
-
-    // Handle one-click auth links like /password=<value> (deprecated, kept for backwards compat)
-    if (req.method === 'GET' && req.path.startsWith('/password=')) {
-      const clientIp = req.socket.remoteAddress ?? 'unknown'
-      const rateCheck = checkLoginRateLimit(clientIp)
-      if (!rateCheck.allowed) {
-        res.setHeader('Retry-After', String(Math.ceil(rateCheck.retryAfterMs / 1000)))
-        res.status(429).json({ error: 'Too many login attempts. Try again later.' })
-        return
-      }
-      const provided = req.path.slice('/password='.length)
-      if (constantTimeCompare(provided, password)) {
-        resetLoginAttempts(clientIp)
-        const token = randomBytes(32).toString('hex')
-        const expiresAt = Date.now() + SESSION_TTL_MS
-        validTokens.set(token, expiresAt)
-        tryPersistSessions(validTokens)
-        res.setHeader('Set-Cookie', buildSessionCookie(token, expiresAt))
-        res.redirect(302, '/')
-        return
-      }
     }
 
     // No valid session — serve login page
