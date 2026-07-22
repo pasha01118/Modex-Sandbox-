@@ -145,7 +145,7 @@ function toEditHref(pathValue: string, newProjectName = ''): string {
   return `/codex-local-edit${encodeURI(pathValue)}${query}`
 }
 
-function escapeForInlineScriptString(value: string): string {
+export function escapeForInlineScriptString(value: string): string {
   // Prevent breaking out of inline <script> blocks when file content contains HTML/script tokens.
   return JSON.stringify(value)
     .replace(/<\//gu, '<\\/')
