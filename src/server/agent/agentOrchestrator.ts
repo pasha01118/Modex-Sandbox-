@@ -14,10 +14,25 @@ class AgentOrchestrator {
   register(agent: BaseAgent): void {
     this.agents.set(agent.id, agent)
     eventBus.emit('agent:status', { agentId: agent.id, status: agent.getStatus() })
+    eventBus.emit('agent:chat', {
+      id: `sys-${Date.now()}`,
+      senderId: 'system',
+      senderName: 'System',
+      senderAvatar: '🔧',
+      senderColor: '#666',
+      content: `${agent.name} (${agent.type}) is now online`,
+      type: 'status',
+      timestamp: new Date().toISOString(),
+      mentions: [],
+    })
   }
 
   unregister(agentId: string): void {
     this.agents.delete(agentId)
+  }
+
+  registerDynamic(agent: BaseAgent): void {
+    this.register(agent)
   }
 
   getAgent(agentId: string): BaseAgent | undefined {
@@ -145,6 +160,18 @@ class AgentOrchestrator {
     agent.setStatus('busy')
 
     try {
+      eventBus.emit('agent:chat', {
+        id: `act-${Date.now()}`,
+        senderId: agent.id,
+        senderName: agent.name,
+        senderAvatar: '⚡',
+        senderColor: '#ff6600',
+        content: `Working on: ${task.type || 'task'} — ${task.input.slice(0, 100)}`,
+        type: 'action',
+        timestamp: new Date().toISOString(),
+        mentions: [],
+      })
+
       let input: any
       try { input = JSON.parse(task.input) } catch { input = { raw: task.input } }
 
@@ -160,8 +187,31 @@ class AgentOrchestrator {
         const result = await agent.executeTask(task)
         taskQueue.complete(task.id, result)
       }
+
+      eventBus.emit('agent:chat', {
+        id: `done-${Date.now()}`,
+        senderId: agent.id,
+        senderName: agent.name,
+        senderAvatar: '✅',
+        senderColor: '#22c55e',
+        content: `Task completed: ${task.type || 'task'}`,
+        type: 'milestone',
+        timestamp: new Date().toISOString(),
+        mentions: [],
+      })
     } catch (err: any) {
       taskQueue.fail(task.id, err.message || String(err))
+      eventBus.emit('agent:chat', {
+        id: `fail-${Date.now()}`,
+        senderId: agent.id,
+        senderName: agent.name,
+        senderAvatar: '❌',
+        senderColor: '#ef4444',
+        content: `Task failed: ${err.message || 'Unknown error'}`,
+        type: 'status',
+        timestamp: new Date().toISOString(),
+        mentions: [],
+      })
     }
 
     agent.setStatus('idle')

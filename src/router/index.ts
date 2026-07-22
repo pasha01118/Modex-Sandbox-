@@ -63,6 +63,11 @@ const router = createRouter({
       component: EmptyRouteView,
     },
     {
+      path: '/alive-agents',
+      name: 'alive-agents',
+      component: EmptyRouteView,
+    },
+    {
       path: '/new-thread',
       redirect: { name: 'home' },
     },

@@ -19,6 +19,7 @@ class ExecutorAgent extends BaseAgent {
 
   async initialize(): Promise<void> {
     this.setStatus('idle')
+    await this.narrate('Executor online and ready for tasks')
   }
 
   async executeTask(task: Task): Promise<string> {
@@ -30,10 +31,13 @@ class ExecutorAgent extends BaseAgent {
 
     try {
       this.setStatus('busy')
+      await this.narrate('Executing', action)
       const result = await toolRegistry.execute(action, params)
+      await this.milestone(`Completed: ${action}`)
       return typeof result === 'string' ? result : JSON.stringify(result, null, 2)
     } catch (err: any) {
       this.log('error', `Task ${task.id} failed: ${err.message}`)
+      await this.sendMessage(`❌ Error executing ${action}: ${err.message}`, 'status')
       throw err
     } finally {
       this.setStatus('idle')
@@ -54,6 +58,7 @@ class PlannerAgent extends BaseAgent {
 
   async initialize(): Promise<void> {
     this.setStatus('idle')
+    await this.narrate('Planner online and ready to analyze goals')
   }
 
   async executeTask(task: Task): Promise<string> {
@@ -62,7 +67,9 @@ class PlannerAgent extends BaseAgent {
 
     try {
       this.setStatus('busy')
+      await this.narrate('Planning goal', goal.slice(0, 60))
       const plan = await taskPlanner.planGoal(goal)
+      await this.milestone(`Plan created: ${plan.steps.length} steps`)
       return JSON.stringify({ planId: plan.id, steps: plan.steps.length }, null, 2)
     } catch (err: any) {
       this.log('error', `Planning failed: ${err.message}`)
@@ -91,17 +98,21 @@ class MaintainerAgent extends BaseAgent {
     this.healthInterval = selfHeal.startPeriodicHealthCheck()
     this.updateInterval = selfHeal.startPeriodicUpdateCheck()
     this.setStatus('monitoring')
+    await this.narrate('Maintainer online — monitoring system health')
   }
 
   async executeTask(task: Task): Promise<string> {
     const input = JSON.parse(task.input)
 
     if (input.action === 'health') {
+      await this.narrate('Running health check')
       const report = await selfHeal.checkHealth()
+      await this.milestone('Health check complete')
       return JSON.stringify(report, null, 2)
     }
 
     if (input.action === 'update') {
+      await this.narrate('Checking for updates')
       const result = await selfHeal.autoUpdate()
       return JSON.stringify(result, null, 2)
     }

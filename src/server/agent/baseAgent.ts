@@ -46,7 +46,22 @@ export abstract class BaseAgent {
 
   abstract executeTask(task: Task): Promise<string>
 
-  handleMessage?(message: { from: string; type: string; payload: any }): Promise<void>
+  async sendMessage(content: string, type: string = 'chat'): Promise<void> {
+    eventBus.emit('agent:chat-send', { agentId: this.id, content, type })
+  }
+
+  async narrate(action: string, detail?: string): Promise<void> {
+    const content = detail ? `⚡ ${action}: ${detail}` : `⚡ ${action}`
+    await this.sendMessage(content, 'action')
+  }
+
+  async milestone(description: string): Promise<void> {
+    await this.sendMessage(`🎯 ${description}`, 'milestone')
+  }
+
+  async onMessage(message: { from: string; type: string; payload: any }): Promise<void> {
+    this.log('info', `Received message from ${message.from}: ${message.type}`)
+  }
 
   async shutdown(): Promise<void> {
     this.setStatus('paused')

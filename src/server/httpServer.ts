@@ -11,6 +11,7 @@ import { WebSocketServer, type WebSocket } from 'ws'
 import { modexRouter } from './agent/modexApi.js'
 import { tokenAccountantRouter } from './agent/tokenAccountantApi.js'
 import { tokenAccountant } from './agent/tokenAccountant.js'
+import { handleAgentMessageRoutes } from './agentMessageApi.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const distDir = join(__dirname, '..', 'dist')
@@ -94,6 +95,18 @@ export function createServer(options: ServerOptions = {}): ServerInstance {
   // 4. Token Accountant API
   app.use('/api/token-accountant', tokenAccountantRouter)
   tokenAccountant.init()
+
+  // 5. Alive Agents API (chat, market, learning, audit)
+  app.use((req: any, res: any, next: any) => {
+    const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`)
+    if (url.pathname.startsWith('/api/agents')) {
+      handleAgentMessageRoutes(req, res, url).then(handled => {
+        if (!handled) next()
+      }).catch(() => next())
+    } else {
+      next()
+    }
+  })
 
   // 5. Serve local images referenced in markdown (desktop parity for absolute image paths)
   app.get('/codex-local-image', (req, res) => {

@@ -435,6 +435,74 @@
 
 ---
 
+<!-- ALIVE AGENTS -->
+<div style="background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);padding:30px 20px;border-radius:16px;border:1px solid #8b5cf644;box-shadow:0 0 40px #8b5cf622,inset 0 0 60px #00000044;margin:20px 0;">
+
+<h2 align="center" style="font-family:'Segoe UI',Arial,sans-serif;font-size:26px;font-weight:800;background:linear-gradient(90deg,#8b5cf6,#00f5ff,#ff6600);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:2px;">
+  🤖 ALIVE AGENTS — TEAM CHAT
+</h2>
+
+<div align="center" style="color:#a0a0c0;font-family:Consolas,monospace;font-size:13px;letter-spacing:1px;margin-bottom:20px;">
+  Live group chat where all agents talk to each other — your AI team in real-time
+</div>
+
+<div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;">
+
+<div style="flex:1;min-width:250px;padding:16px;border-radius:10px;background:linear-gradient(135deg,#8b5cf611,#8b5cf605);border:1px solid #8b5cf644;">
+  <div style="font-family:Consolas,monospace;font-size:13px;font-weight:700;color:#8b5cf6;text-shadow:0 0 6px #8b5cf644;">💬 Team Chat</div>
+  <div style="font-size:12px;color:#7878a0;font-family:Consolas,monospace;margin-top:6px;line-height:1.5;">
+    Real-time group chat with @mentions. Every agent narrates actions and milestones. User commands (stop, wait, resume) are obeyed instantly.
+  </div>
+</div>
+
+<div style="flex:1;min-width:250px;padding:16px;border-radius:10px;background:linear-gradient(135deg,#00f5ff11,#00f5ff05);border:1px solid #00f5ff44;">
+  <div style="font-family:Consolas,monospace;font-size:13px;font-weight:700;color:#00f5ff;text-shadow:0 0 6px #00f5ff44;">🏪 Agent Market</div>
+  <div style="font-size:12px;color:#7878a0;font-family:Consolas,monospace;margin-top:6px;line-height:1.5;">
+    Create unlimited custom agents. Set name, role, personality, skills, qualifications. Assign to projects. Delete when done.
+  </div>
+</div>
+
+<div style="flex:1;min-width:250px;padding:16px;border-radius:10px;background:linear-gradient(135deg,#22c55e11,#22c55e05);border:1px solid #22c55e44;">
+  <div style="font-family:Consolas,monospace;font-size:13px;font-weight:700;color:#22c55e;text-shadow:0 0 6px #22c55e44;">📈 Growth & Learning</div>
+  <div style="font-size:12px;color:#7878a0;font-family:Consolas,monospace;margin-top:6px;line-height:1.5;">
+    XP and leveling system. Pattern analysis from experience. Leaderboard. Self-improvement suggestions based on success rates.
+  </div>
+</div>
+
+</div>
+
+<br/>
+
+<div align="center" style="background:#0a0a1e;border-radius:12px;padding:16px;border:1px solid #8b5cf633;">
+<pre style="background:transparent;color:#c0c0e0;font-family:Consolas,monospace;font-size:12px;margin:0;line-height:1.8;text-align:left;display:inline-block;">
+<span style="color:#8b5cf6;font-weight:700;">Built-in Agents:</span>
+
+  <span style="color:#ff6600;">👑 MODEX</span>       Head of Department — leads the team, enforces process
+  <span style="color:#00f5ff;">🧠 Atlas</span>       Lead Architect — plans, designs, documents
+  <span style="color:#ff00ff;">⚒️ Forge</span>       Senior Engineer — builds, executes, delivers
+  <span style="color:#22c55e;">🛡️ Sentinel</span>    DevOps Lead — monitors, protects, heals
+  <span style="color:#f59e0b;">💰 Ledger</span>      Token Accountant — tracks costs, warns on budget
+  <span style="color:#6366f1;">🔍 Guard</span>       Auditor & Inspector — checks, approves, rejects
+
+<span style="color:#8b5cf6;font-weight:700;">User Commands (highest priority):</span>
+
+  <span style="color:#ef4444;">stop</span>     — halt all agents immediately
+  <span style="color:#f59e0b;">wait</span>     — pause all agents
+  <span style="color:#22c55e;">resume</span>   — resume paused agents
+  <span style="color:#00f5ff;">status</span>   — get team status report
+
+<span style="color:#8b5cf6;font-weight:700;">Chat Persistence:</span>
+
+  <span style="color:#a0a0c0;">Daily log rotation at ~/.codex/agent-messages/YYYY-MM-DD.json</span>
+  <span style="color:#a0a0c0;">Kept until user deletes — never auto-purged</span>
+  <span style="color:#a0a0c0;">SSE real-time stream for live chat updates</span>
+</pre>
+</div>
+
+</div>
+
+---
+
 <!-- ARCHITECTURE -->
 <h2 align="center" style="font-family:'Segoe UI',Arial,sans-serif;font-size:24px;font-weight:800;background:linear-gradient(90deg,#ff6600,#ff00ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:2px;">🏗️ ARCHITECTURE</h2>
 
@@ -464,8 +532,15 @@
 │   │   ├── <span style="color:#ff6600;">modexApi.ts</span>      <span style="color:#ff6600;font-weight:700;"># ★ MODEX REST API</span>
 │   │   ├── <span style="color:#22c55e;">tokenPricing.ts</span>    <span style="color:#22c55e;font-weight:700;"># ★ Per-model pricing table</span>
 │   │   ├── <span style="color:#22c55e;">tokenAccountant.ts</span> <span style="color:#22c55e;font-weight:700;"># ★ Token tracker + budget alarms</span>
-│   │   └── <span style="color:#22c55e;">tokenAccountantApi.ts</span> <span style="color:#22c55e;font-weight:700;"># ★ Token REST API</span>
+│   │   ├── <span style="color:#22c55e;">tokenAccountantApi.ts</span> <span style="color:#22c55e;font-weight:700;"># ★ Token REST API</span>
+│   │   ├── <span style="color:#8b5cf6;">agentIdentities.ts</span> <span style="color:#8b5cf6;font-weight:700;"># ★ Agent identity registry + badges</span>
+│   │   ├── <span style="color:#8b5cf6;">agentMessageBroker.ts</span> <span style="color:#8b5cf6;font-weight:700;"># ★ Message bus + SSE + commands</span>
+│   │   ├── <span style="color:#8b5cf6;">agentLearning.ts</span>  <span style="color:#8b5cf6;font-weight:700;"># ★ XP, growth, pattern analysis</span>
+│   │   ├── <span style="color:#8b5cf6;">auditorAgent.ts</span>   <span style="color:#8b5cf6;font-weight:700;"># ★ Guard audit checkpoints</span>
+│   │   ├── <span style="color:#8b5cf6;">agentMarket.ts</span>    <span style="color:#8b5cf6;font-weight:700;"># ★ Agent CRUD + assignment</span>
+│   │   └── <span style="color:#8b5cf6;">customAgentFactory.ts</span> <span style="color:#8b5cf6;font-weight:700;"># ★ Dynamic agent creation</span>
 │   ├── <span style="color:#22c55e;">agentRouter.ts</span>    <span style="color:#6060a0;"># 17 agent API endpoints</span>
+│   ├── <span style="color:#8b5cf6;">agentMessageApi.ts</span> <span style="color:#8b5cf6;font-weight:700;"># ★ Alive Agents REST + SSE API</span>
 │   ├── <span style="color:#22c55e;">ollamaRouter.ts</span>   <span style="color:#6060a0;"># Ollama backend proxy</span>
 │   ├── <span style="color:#22c55e;">sentinelRouter.ts</span> <span style="color:#6060a0;"># Security agents</span>
 │   └── <span style="color:#22c55e;">codexAppServerBridge.ts</span> <span style="color:#6060a0;"># Central API bridge</span>

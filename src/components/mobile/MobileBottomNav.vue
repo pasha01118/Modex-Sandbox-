@@ -48,6 +48,7 @@ const tabs: NavTab[] = [
   { name: 'auto-pilot', label: 'Agents', icon: IconTablerBolt },
   { name: 'modex', label: 'MODEX', icon: IconTablerShieldScan },
   { name: 'token-accountant', label: 'Tokens', icon: IconTablerBolt },
+  { name: 'alive-agents', label: 'Team', icon: IconTablerBolt },
 ]
 </script>
 
