@@ -81,7 +81,21 @@ export function createServer(options: ServerOptions = {}): ServerInstance {
   const bridge = createCodexBridgeMiddleware()
   const authSession = options.password ? createAuthSession(options.password) : null
 
-  // 1. Auth middleware (if password is set)
+  // 1. Security headers (applied to all responses)
+  app.use((req, res, next) => {
+    res.setHeader('X-Frame-Options', 'DENY')
+    res.setHeader('X-Content-Type-Options', 'nosniff')
+    res.setHeader('X-XSS-Protection', '1; mode=block')
+    res.setHeader('Referrer-Policy', 'no-referrer')
+    res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=()')
+    res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' ws: wss:; font-src 'self' data:; frame-ancestors 'none'")
+    if (!req.headers.host?.includes('localhost') && !req.headers.host?.includes('127.0.0.1')) {
+      res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
+    }
+    next()
+  })
+
+  // 2. Auth middleware (if password is set)
   if (authSession) {
     app.use(authSession.middleware)
   }
@@ -125,7 +139,7 @@ export function createServer(options: ServerOptions = {}): ServerInstance {
 
     res.type(contentType)
     res.setHeader('Cache-Control', 'private, max-age=300')
-    res.sendFile(localPath, { dotfiles: 'allow' }, (error) => {
+    res.sendFile(localPath, { dotfiles: 'deny' }, (error) => {
       if (!error) return
       if (!res.headersSent) res.status(404).json({ error: 'Image file not found.' })
     })
@@ -142,7 +156,7 @@ export function createServer(options: ServerOptions = {}): ServerInstance {
 
     res.setHeader('Cache-Control', 'private, no-store')
     res.setHeader('Content-Disposition', 'inline')
-    res.sendFile(localPath, { dotfiles: 'allow' }, (error) => {
+    res.sendFile(localPath, { dotfiles: 'deny' }, (error) => {
       if (!error) return
       if (!res.headersSent) res.status(404).json({ error: 'File not found.' })
     })
@@ -191,7 +205,7 @@ export function createServer(options: ServerOptions = {}): ServerInstance {
         return
       }
 
-      res.sendFile(localPath, { dotfiles: 'allow' }, (error) => {
+      res.sendFile(localPath, { dotfiles: 'deny' }, (error) => {
         if (!error) return
         if (!res.headersSent) res.status(404).json({ error: 'File not found.' })
       })
@@ -245,7 +259,7 @@ export function createServer(options: ServerOptions = {}): ServerInstance {
 
   // 8. Static files from Vue build
   if (hasFrontendAssets) {
-    app.use(express.static(distDir))
+    app.use(express.static(distDir, { dotfiles: 'deny', index: false }))
   }
 
   // 9. SPA fallback
@@ -290,10 +304,34 @@ export function createServer(options: ServerOptions = {}): ServerInstance {
           return
         }
 
+        // Origin validation for WebSocket
+        const origin = req.headers.origin
+        const host = req.headers.host ?? ''
+        if (origin) {
+          try {
+            const originUrl = new URL(origin)
+            const allowedHosts = ['localhost', '127.0.0.1', '::1', '::ffff:127.0.0.1']
+            const originHost = originUrl.hostname
+            const reqHost = host.split(':')[0] ?? ''
+            if (!allowedHosts.includes(originHost) && originHost !== reqHost) {
+              socket.write('HTTP/1.1 403 Forbidden\r\nConnection: close\r\n\r\n')
+              socket.destroy()
+              return
+            }
+          } catch {
+            socket.write('HTTP/1.1 400 Bad Request\r\nConnection: close\r\n\r\n')
+            socket.destroy()
+            return
+          }
+        }
+
         wss.handleUpgrade(req, socket, head, (ws: WebSocket) => {
           wss.emit('connection', ws, req)
         })
       })
+
+      // Limit WebSocket message size to 1MB
+      const MAX_WS_MESSAGE_SIZE = 1024 * 1024
 
       wss.on('connection', (ws: WebSocket) => {
         ws.send(JSON.stringify({ method: 'ready', params: { ok: true }, atIso: new Date().toISOString() }))

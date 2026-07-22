@@ -1,4 +1,4 @@
-import { dirname, extname, join } from 'node:path'
+import { dirname, extname, join, resolve } from 'node:path'
 import { open, readFile, readdir, stat } from 'node:fs/promises'
 
 type DirectoryItem = {
@@ -59,14 +59,16 @@ function languageForPath(pathValue: string): string {
 export function normalizeLocalPath(rawPath: string): string {
   const trimmed = rawPath.trim()
   if (!trimmed) return ''
-  if (trimmed.startsWith('file://')) {
+  let cleaned = trimmed
+  if (cleaned.startsWith('file://')) {
     try {
-      return decodeURIComponent(trimmed.replace(/^file:\/\//u, ''))
+      cleaned = decodeURIComponent(cleaned.replace(/^file:\/\//u, ''))
     } catch {
-      return trimmed.replace(/^file:\/\//u, '')
+      cleaned = cleaned.replace(/^file:\/\//u, '')
     }
   }
-  return trimmed
+  // Resolve to canonical path to prevent traversal
+  return resolve(cleaned)
 }
 
 export function decodeBrowsePath(rawPath: string): string {

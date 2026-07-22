@@ -1,7 +1,8 @@
-import { execSync } from 'node:child_process'
+import { execSync, execFileSync } from 'node:child_process'
 import { readFileSync, writeFileSync, existsSync } from 'node:fs'
 import { readdir } from 'node:fs/promises'
-import { join, relative, resolve } from 'node:path'
+import { join, relative, resolve, isAbsolute } from 'node:path'
+import { homedir } from 'node:os'
 
 interface ToolParam {
   name: string
@@ -19,6 +20,17 @@ interface ToolDefinition {
 
 const tools = new Map<string, ToolDefinition>()
 
+const BLOCKED_PATHS = ['/etc/shadow', '/etc/passwd', '/proc', '/sys']
+
+function isPathSafe(filePath: string): boolean {
+  const resolved = resolve(filePath)
+  for (const blocked of BLOCKED_PATHS) {
+    if (resolved.startsWith(blocked)) return false
+  }
+  if (resolved.includes('/../')) return false
+  return true
+}
+
 function run(cmd: string, cwd?: string): string {
   return execSync(cmd, {
     cwd: cwd || process.cwd(),
@@ -26,6 +38,19 @@ function run(cmd: string, cwd?: string): string {
     encoding: 'utf-8',
     maxBuffer: 10 * 1024 * 1024,
   }).trim()
+}
+
+function runSafe(command: string, args: string[], cwd?: string): string {
+  return execFileSync(command, args, {
+    cwd: cwd || process.cwd(),
+    timeout: 30_000,
+    encoding: 'utf-8',
+    maxBuffer: 10 * 1024 * 1024,
+  }).trim()
+}
+
+function shellEscape(s: string): string {
+  return s.replace(/[^a-zA-Z0-9_.,%@/:=-]/g, '\\$&')
 }
 
 function define(t: ToolDefinition): void {
@@ -51,6 +76,7 @@ define({
     { name: 'path', type: 'string', description: 'Absolute file path', required: true },
   ],
   async execute(params) {
+    if (!isPathSafe(params.path)) throw new Error('Access denied: path not allowed')
     if (!existsSync(params.path)) throw new Error(`File not found: ${params.path}`)
     return readFileSync(params.path, 'utf-8')
   },
@@ -64,6 +90,7 @@ define({
     { name: 'content', type: 'string', description: 'Content to write', required: true },
   ],
   async execute(params) {
+    if (!isPathSafe(params.path)) throw new Error('Access denied: path not allowed')
     writeFileSync(params.path, params.content, 'utf-8')
     return `Written ${params.content.length} bytes to ${params.path}`
   },
@@ -76,6 +103,7 @@ define({
     { name: 'path', type: 'string', description: 'Directory path', required: true },
   ],
   async execute(params) {
+    if (!isPathSafe(params.path)) throw new Error('Access denied: path not allowed')
     const entries = await readdir(params.path, { withFileTypes: true })
     return entries.map(e => ({
       name: e.name,
@@ -106,7 +134,7 @@ define({
   ],
   async execute(params) {
     run('git add -A', params.cwd)
-    return run(`git commit -m ${JSON.stringify(params.message)}`, params.cwd)
+    return runSafe('git', ['commit', '-m', params.message], params.cwd)
   },
 })
 
@@ -118,8 +146,8 @@ define({
     { name: 'cwd', type: 'string', description: 'Git repository path', required: false },
   ],
   async execute(params) {
-    const n = params.count || 10
-    return run(`git log --oneline -${n}`, params.cwd)
+    const n = Math.min(Math.max(Number(params.count) || 10, 1), 100)
+    return runSafe('git', ['log', '--oneline', `-${n}`], params.cwd)
   },
 })
 
@@ -133,8 +161,11 @@ define({
   ],
   async execute(params) {
     const dir = params.path || '.'
-    const ext = params.include ? `--include '${params.include}'` : ''
-    return run(`grep -rn ${ext} '${params.pattern}' ${dir} | head -100`, params.cwd || process.cwd())
+    if (!isPathSafe(dir)) throw new Error('Access denied: path not allowed')
+    const args = ['-rn', '--max-count=100']
+    if (params.include) args.push(`--include=${params.include}`)
+    args.push(params.pattern, dir)
+    return runSafe('grep', args, params.cwd || process.cwd())
   },
 })
 
@@ -179,6 +210,8 @@ define({
     { name: 'name', type: 'string', description: 'Environment variable name', required: true },
   ],
   async execute(params) {
+    const blocked = ['OPENAI_API_KEY', 'ANTHROPIC_API_KEY', 'CODEX_AUTH_TOKEN', 'CODEX_PASSWORD', 'AWS_SECRET_ACCESS_KEY', 'SECRET_KEY']
+    if (blocked.includes(params.name)) return '(redacted)'
     return process.env[params.name] || '(not set)'
   },
 })
@@ -190,6 +223,7 @@ define({
     { name: 'path', type: 'string', description: 'JSON file path', required: true },
   ],
   async execute(params) {
+    if (!isPathSafe(params.path)) throw new Error('Access denied: path not allowed')
     if (!existsSync(params.path)) throw new Error(`File not found: ${params.path}`)
     return JSON.parse(readFileSync(params.path, 'utf-8'))
   },
@@ -203,6 +237,7 @@ define({
     { name: 'data', type: 'string', description: 'JSON string to write', required: true },
   ],
   async execute(params) {
+    if (!isPathSafe(params.path)) throw new Error('Access denied: path not allowed')
     const data = typeof params.data === 'string' ? JSON.parse(params.data) : params.data
     writeFileSync(params.path, JSON.stringify(data, null, 2), 'utf-8')
     return `Written to ${params.path}`

@@ -6,9 +6,34 @@ import { dirname, join } from 'node:path'
 import type { RequestHandler, Request, Response, NextFunction } from 'express'
 
 const TOKEN_COOKIE = 'portal_session'
-const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000
+const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000 // 7 days (reduced from 30)
 const SESSION_STORE_FILE = 'webui-auth-sessions.json'
 const MAX_PERSISTED_TOKENS = 128
+
+// Rate limiting for login attempts
+const loginAttempts = new Map<string, { count: number; resetAt: number }>()
+const MAX_LOGIN_ATTEMPTS = 5
+const LOGIN_WINDOW_MS = 15 * 60 * 1000 // 15 minutes
+const LOGIN_LOCKOUT_MS = 30 * 60 * 1000 // 30 minutes lockout
+
+function checkLoginRateLimit(ip: string): { allowed: boolean; retryAfterMs: number } {
+  const now = Date.now()
+  const entry = loginAttempts.get(ip)
+  if (!entry || now > entry.resetAt) {
+    loginAttempts.set(ip, { count: 1, resetAt: now + LOGIN_WINDOW_MS })
+    return { allowed: true, retryAfterMs: 0 }
+  }
+  if (entry.count >= MAX_LOGIN_ATTEMPTS) {
+    const retryAfterMs = entry.resetAt + LOGIN_LOCKOUT_MS - now
+    return { allowed: false, retryAfterMs: Math.max(0, retryAfterMs) }
+  }
+  entry.count++
+  return { allowed: true, retryAfterMs: 0 }
+}
+
+function resetLoginAttempts(ip: string): void {
+  loginAttempts.delete(ip)
+}
 
 type PersistedAuthState = {
   tokens?: Array<{
@@ -239,6 +264,14 @@ export function createAuthSession(password: string): AuthSession {
 
     // Handle login POST
     if (req.method === 'POST' && req.path === '/auth/login') {
+      const clientIp = req.socket.remoteAddress ?? 'unknown'
+      const rateCheck = checkLoginRateLimit(clientIp)
+      if (!rateCheck.allowed) {
+        res.setHeader('Retry-After', String(Math.ceil(rateCheck.retryAfterMs / 1000)))
+        res.status(429).json({ error: 'Too many login attempts. Try again later.' })
+        return
+      }
+
       let body = ''
       req.setEncoding('utf8')
       req.on('data', (chunk: string) => { body += chunk })
@@ -257,6 +290,8 @@ export function createAuthSession(password: string): AuthSession {
           return
         }
 
+        resetLoginAttempts(clientIp)
+
         try {
           const token = randomBytes(32).toString('hex')
           const expiresAt = Date.now() + SESSION_TTL_MS
@@ -271,10 +306,18 @@ export function createAuthSession(password: string): AuthSession {
       return
     }
 
-    // Handle one-click auth links like /password=<value>
+    // Handle one-click auth links like /password=<value> (deprecated, kept for backwards compat)
     if (req.method === 'GET' && req.path.startsWith('/password=')) {
+      const clientIp = req.socket.remoteAddress ?? 'unknown'
+      const rateCheck = checkLoginRateLimit(clientIp)
+      if (!rateCheck.allowed) {
+        res.setHeader('Retry-After', String(Math.ceil(rateCheck.retryAfterMs / 1000)))
+        res.status(429).json({ error: 'Too many login attempts. Try again later.' })
+        return
+      }
       const provided = req.path.slice('/password='.length)
       if (constantTimeCompare(provided, password)) {
+        resetLoginAttempts(clientIp)
         const token = randomBytes(32).toString('hex')
         const expiresAt = Date.now() + SESSION_TTL_MS
         validTokens.set(token, expiresAt)
