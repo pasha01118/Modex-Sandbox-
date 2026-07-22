@@ -1,25 +1,23 @@
 import { createCipheriv, createDecipheriv, randomBytes, scryptSync } from 'node:crypto'
-import { readFileSync, writeFileSync, renameSync, existsSync, chmodSync } from 'node:fs'
+import { readFileSync, writeFileSync, renameSync, existsSync } from 'node:fs'
 import { homedir } from 'node:os'
-import { join, dirname } from 'node:path'
+import { join } from 'node:path'
 import { execSync } from 'node:child_process'
 
-const VAULT_VERSION = 1
+const VAULT_VERSION = 2
 const SALT_LENGTH = 16
 const IV_LENGTH = 12
-const KEY_LENGTH = 32 // AES-256 requires 32 bytes
+const KEY_LENGTH = 32
 const ENCRYPTED_SUFFIX = '.enc'
 const BACKUP_SUFFIX = '.bak'
 
 interface EncryptedPayload {
   version: number
-  salt: string // hex
-  iv: string // hex
-  tag: string // hex
-  data: string // hex
+  salt: string
+  iv: string
+  tag: string
+  data: string
 }
-
-let cachedKey: Buffer | null = null
 
 function getMachineId(): string {
   let hostname = 'localhost'
@@ -30,21 +28,13 @@ function getMachineId(): string {
   return `modex:${hostname}:${uid}:${codexHome}`
 }
 
-function getSalt(): string {
-  return `modex-vault-${VAULT_VERSION}`
-}
-
-function deriveKey(): Buffer {
-  if (cachedKey) return cachedKey
-  const machineId = getMachineId()
-  const salt = getSalt()
-  cachedKey = scryptSync(machineId, salt, KEY_LENGTH)
-  return cachedKey
+function deriveKey(salt: string): Buffer {
+  return scryptSync(getMachineId(), salt, KEY_LENGTH)
 }
 
 export function encryptString(plaintext: string): EncryptedPayload {
-  const key = deriveKey()
   const salt = randomBytes(SALT_LENGTH)
+  const key = deriveKey(salt.toString('hex'))
   const iv = randomBytes(IV_LENGTH)
   const cipher = createCipheriv('aes-256-gcm', key, iv)
   const encrypted = Buffer.concat([cipher.update(plaintext, 'utf-8'), cipher.final()])
@@ -59,7 +49,10 @@ export function encryptString(plaintext: string): EncryptedPayload {
 }
 
 export function decryptString(payload: EncryptedPayload): string {
-  const key = deriveKey()
+  const salt = payload.version >= 2
+    ? payload.salt
+    : 'modex-vault-1'
+  const key = deriveKey(salt)
   const iv = Buffer.from(payload.iv, 'hex')
   const tag = Buffer.from(payload.tag, 'hex')
   const data = Buffer.from(payload.data, 'hex')

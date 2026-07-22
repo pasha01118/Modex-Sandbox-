@@ -1,6 +1,7 @@
 import { readFileSync, existsSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
+import { randomInt } from 'node:crypto'
 import { secretsVault } from './secretsVault.js'
 
 // Community keys are now loaded from encrypted file at runtime
@@ -42,10 +43,10 @@ function loadCommunityKeys(): string[] {
 }
 
 export function getRandomFreeKey(): string | null {
-  const keys = loadCommunityKeys()
-  if (keys.length === 0) return null
-  const idx = Math.floor(Math.random() * keys.length)
-  return keys[idx]!
+  const keys = cachedCommunityKeys
+  if (!keys || keys.length === 0) return null
+  const idx = randomInt(keys.length)
+  return keys[idx] ?? null
 }
 
 export function getFreeKeyCount(): number {

@@ -24,7 +24,7 @@ describe('SecretsVault', () => {
   it('encrypts and decrypts a string round-trip', () => {
     const original = 'my-super-secret-api-key-12345'
     const encrypted = encryptString(original)
-    expect(encrypted.version).toBe(1)
+    expect(encrypted.version).toBe(2)
     expect(encrypted.iv).toBeTruthy()
     expect(encrypted.tag).toBeTruthy()
     expect(encrypted.data).toBeTruthy()
@@ -550,7 +550,32 @@ describe('ToolRegistry - Live Penetration Tests', () => {
       .rejects.toThrow('Access denied')
   })
 
-  it('rejects searchCode on /etc (BLOCKED_PATHS now includes parent dir)', async () => {
+  it('rejects reading oversized file via readFile tool', async () => {
+    const tmpDir = join(tmpdir(), `audit-oversize-${Date.now()}`)
+    mkdirSync(tmpDir, { recursive: true })
+    const bigFile = join(tmpDir, 'big.bin')
+    writeFileSync(bigFile, Buffer.alloc(101 * 1024 * 1024))
+    await expect(toolRegistry.execute('readFile', { path: bigFile }))
+      .rejects.toThrow('too large')
+    unlinkSync(bigFile)
+  })
+
+  it('executeCommand rejects empty command', async () => {
+    await expect(toolRegistry.execute('executeCommand', { command: '' }))
+      .rejects.toThrow('Empty command')
+  })
+
+  it('executeCommand parses quoted arguments correctly', async () => {
+    const result = await toolRegistry.execute('executeCommand', { command: 'echo hello' })
+    expect(result).toBe('hello')
+  })
+
+  it('executeCommand with multi-word quoted arg', async () => {
+    const result = await toolRegistry.execute('executeCommand', { command: 'echo "hello world"' })
+    expect(result).toBe('hello world')
+  })
+
+  it('rejects searchCode on /etc', async () => {
     await expect(toolRegistry.execute('searchCode', { pattern: 'localhost', path: '/etc' }))
       .rejects.toThrow('Access denied')
   })

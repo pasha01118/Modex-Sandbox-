@@ -1,8 +1,10 @@
 import { execFileSync } from 'node:child_process'
-import { readFileSync, writeFileSync, existsSync } from 'node:fs'
+import { readFileSync, writeFileSync, existsSync, statSync } from 'node:fs'
 import { readdir } from 'node:fs/promises'
 import { join, relative, resolve, isAbsolute } from 'node:path'
 import { homedir } from 'node:os'
+
+const MAX_READ_FILE_SIZE = 100 * 1024 * 1024
 
 interface ToolParam {
   name: string
@@ -83,6 +85,8 @@ define({
   async execute(params) {
     if (!isPathSafe(params.path)) throw new Error('Access denied: path not allowed')
     if (!existsSync(params.path)) throw new Error(`File not found: ${params.path}`)
+    const size = statSync(params.path).size
+    if (size > MAX_READ_FILE_SIZE) throw new Error(`File too large (${size} bytes, max ${MAX_READ_FILE_SIZE})`)
     return readFileSync(params.path, 'utf-8')
   },
 })
