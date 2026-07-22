@@ -73,28 +73,14 @@
   <g>
     <animateTransform attributeName="transform" type="rotate" values="-4,400,115;4,400,115;-4,400,115" dur="4s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.6 1;0.4 0 0.6 1"/>
 
-    <!-- 3D Embossed Extrusion (bottom layers → top face) -->
-    <text x="406" y="135" text-anchor="middle" font-family="Impact,'Arial Black',sans-serif" font-size="78" font-weight="900" fill="#000000" opacity="0.5" filter="url(#embossShadow)">MODEX</text>
+    <text x="406" y="135" text-anchor="middle" font-family="Impact,'Arial Black',sans-serif" font-size="78" font-weight="900" fill="#000" opacity="0.5" filter="url(#embossShadow)">MODEX</text>
     <text x="404" y="133" text-anchor="middle" font-family="Impact,'Arial Black',sans-serif" font-size="78" font-weight="900" fill="#404040">MODEX</text>
     <text x="402" y="131" text-anchor="middle" font-family="Impact,'Arial Black',sans-serif" font-size="78" font-weight="900" fill="#707070">MODEX</text>
     <text x="400" y="129" text-anchor="middle" font-family="Impact,'Arial Black',sans-serif" font-size="78" font-weight="900" fill="#a0a0a0">MODEX</text>
-
-    <!-- Top metallic face -->
     <text x="398" y="127" text-anchor="middle" font-family="Impact,'Arial Black',sans-serif" font-size="78" font-weight="900" fill="url(#metalGrad)">MODEX</text>
-
-    <!-- Metallic sheen highlight -->
-    <text x="398" y="127" text-anchor="middle" font-family="Impact,'Arial Black',sans-serif" font-size="78" font-weight="900" fill="url(#metalSheen)">
-      <animate attributeName="opacity" values="0.5;0.2;0.5" dur="2.5s" repeatCount="indefinite"/>
-    </text>
-
-    <!-- AI badge with neon teal -->
-    <rect x="478" y="82" width="60" height="34" rx="17" fill="none" stroke="#00f5ff" stroke-width="2.5" filter="url(#neonGlow)">
-      <animate attributeName="stroke" values="#00f5ff;#7c3aed;#00f5ff" dur="4s" repeatCount="indefinite"/>
-    </rect>
-    <text x="508" y="104" text-anchor="middle" font-family="'Arial Black',sans-serif" font-size="15" font-weight="900" fill="#00f5ff" filter="url(#neonGlow)">
-      AI
-      <animate attributeName="fill" values="#00f5ff;#7c3aed;#00f5ff" dur="4s" repeatCount="indefinite"/>
-    </text>
+    <text x="398" y="127" text-anchor="middle" font-family="Impact,'Arial Black',sans-serif" font-size="78" font-weight="900" fill="url(#metalSheen)"><animate attributeName="opacity" values="0.5;0.2;0.5" dur="2.5s" repeatCount="indefinite"/></text>
+    <rect x="478" y="82" width="60" height="34" rx="17" fill="none" stroke="#00f5ff" stroke-width="2.5" filter="url(#neonGlow)"><animate attributeName="stroke" values="#00f5ff;#7c3aed;#00f5ff" dur="4s" repeatCount="indefinite"/></rect>
+    <text x="508" y="104" text-anchor="middle" font-family="'Arial Black',sans-serif" font-size="15" font-weight="900" fill="#00f5ff" filter="url(#neonGlow)">AI<animate attributeName="fill" values="#00f5ff;#7c3aed;#00f5ff" dur="4s" repeatCount="indefinite"/></text>
   </g>
 
   <!-- Subtitle — neon teal -->
