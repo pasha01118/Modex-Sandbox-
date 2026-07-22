@@ -159,6 +159,21 @@
                 <span class="sidebar-skills-link-subtitle">{{ t('Autonomous agents') }}</span>
               </span>
             </button>
+
+            <button
+              class="sidebar-skills-link"
+              :class="{ 'is-active': isModexRoute, 'is-collapsed': isSidebarCollapsed }"
+              type="button"
+              @click="router.push({ name: 'modex' }); isMobile && setSidebarCollapsed(true)"
+            >
+              <span class="sidebar-skills-link-icon sidebar-modex-link-icon" aria-hidden="true">
+                <IconTablerShieldCheck />
+              </span>
+              <span v-if="!isSidebarCollapsed" class="sidebar-skills-link-copy">
+                <span class="sidebar-skills-link-title">MODEX</span>
+                <span class="sidebar-skills-link-subtitle">HOD Agent</span>
+              </span>
+            </button>
           </template>
 
           <SidebarThreadTree ref="sidebarThreadTreeRef" :groups="projectGroups" :project-display-name-by-id="projectDisplayNameById"
@@ -602,7 +617,7 @@
         :style="contentStyle"
       >
         <span v-if="isVirtualKeyboardOpen" class="content-keyboard-spacer" aria-hidden="true" />
-        <ContentHeader :title="contentTitle" :accent="isSkillsRoute || isAutomationsRoute || isSocketSecurityRoute || isSupabaseRoute || isSentinelsRoute || isOllamaRoute || isAutoPilotRoute">
+        <ContentHeader :title="contentTitle" :accent="isSkillsRoute || isAutomationsRoute || isSocketSecurityRoute || isSupabaseRoute || isSentinelsRoute || isOllamaRoute || isAutoPilotRoute || isModexRoute">
           <template #leading>
             <SidebarThreadControls
               v-if="isSidebarCollapsed || isMobile"
@@ -716,6 +731,9 @@
           </template>
           <template v-else-if="isAutoPilotRoute">
             <AutoPilotPanel />
+          </template>
+          <template v-else-if="isModexRoute">
+            <ModexBossPanel />
           </template>
           <template v-else-if="isHomeRoute">
             <div class="content-grid content-grid-home">
@@ -1177,7 +1195,7 @@
       :style="contentStyle"
     >
       <span v-if="isVirtualKeyboardOpen" class="content-keyboard-spacer" aria-hidden="true" />
-      <ContentHeader :title="contentTitle" :accent="isSkillsRoute || isAutomationsRoute || isSocketSecurityRoute || isSupabaseRoute || isSentinelsRoute || isOllamaRoute">
+      <ContentHeader :title="contentTitle" :accent="isSkillsRoute || isAutomationsRoute || isSocketSecurityRoute || isSupabaseRoute || isSentinelsRoute || isOllamaRoute || isAutoPilotRoute || isModexRoute">
         <template #leading>
           <SidebarThreadControls
             v-if="isSidebarCollapsed || isMobile"
@@ -1291,6 +1309,9 @@
         </template>
         <template v-else-if="isAutoPilotRoute">
           <AutoPilotPanel />
+        </template>
+        <template v-else-if="isModexRoute">
+          <ModexBossPanel />
         </template>
         <template v-else-if="isHomeRoute">
           <div class="content-grid content-grid-home">
@@ -1951,6 +1972,7 @@ const SupabasePanel = defineAsyncComponent(() => import('./components/content/Su
 const SentinelsPanel = defineAsyncComponent(() => import('./components/content/SentinelsPanel.vue'))
 const OllamaPanel = defineAsyncComponent(() => import('./components/content/OllamaPanel.vue'))
 const AutoPilotPanel = defineAsyncComponent(() => import('./components/content/AutoPilotPanel.vue'))
+const ModexBossPanel = defineAsyncComponent(() => import('./components/content/ModexBossPanel.vue'))
 const { t, uiLanguage, uiLanguageOptions, setUiLanguage } = useUiLanguage()
 
 const SIDEBAR_COLLAPSED_STORAGE_KEY = 'codex-web-local.sidebar-collapsed.v1'
@@ -2452,6 +2474,7 @@ const isSupabaseRoute = computed(() => route.name === 'supabase')
 const isSentinelsRoute = computed(() => route.name === 'sentinels')
 const isOllamaRoute = computed(() => route.name === 'ollama')
 const isAutoPilotRoute = computed(() => route.name === 'auto-pilot')
+const isModexRoute = computed(() => route.name === 'modex')
 const routeAutomationId = computed(() => {
   const raw = route.query.automationId
   return typeof raw === 'string' ? raw : ''
@@ -2464,6 +2487,7 @@ const contentTitle = computed(() => {
   if (isSentinelsRoute.value) return t('Sentinels')
   if (isOllamaRoute.value) return t('Ollama')
   if (isAutoPilotRoute.value) return t('Auto-Pilot')
+  if (isModexRoute.value) return 'MODEX — HOD Agent'
   if (isHomeRoute.value) return t('Start new thread')
   return selectedThread.value?.title ?? t('Choose a thread')
 })
@@ -2475,6 +2499,7 @@ const mobileActiveTab = computed(() => {
   if (isSentinelsRoute.value) return 'sentinels'
   if (isOllamaRoute.value) return 'ollama'
   if (isAutoPilotRoute.value) return 'auto-pilot'
+  if (isModexRoute.value) return 'modex'
   return 'home'
 })
 function onMobileTabSelect(tab: string) {

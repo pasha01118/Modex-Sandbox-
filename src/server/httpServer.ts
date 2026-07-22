@@ -8,6 +8,7 @@ import { createCodexBridgeMiddleware } from './codexAppServerBridge.js'
 import { createAuthSession } from './authMiddleware.js'
 import { createDirectoryListingHtml, createTextEditorHtml, decodeBrowsePath, getLocalDirectoryListing, isTextEditableFile, normalizeLocalPath } from './localBrowseUi.js'
 import { WebSocketServer, type WebSocket } from 'ws'
+import { modexRouter } from './agent/modexApi.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const distDir = join(__dirname, '..', 'dist')
@@ -84,6 +85,9 @@ export function createServer(options: ServerOptions = {}): ServerInstance {
 
   // 2. Bridge middleware for /codex-api/*
   app.use(bridge)
+
+  // 3. MODEX HOD agent API
+  app.use('/api/modex', modexRouter)
 
   // 3. Serve local images referenced in markdown (desktop parity for absolute image paths)
   app.get('/codex-local-image', (req, res) => {

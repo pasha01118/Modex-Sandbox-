@@ -53,6 +53,11 @@ const router = createRouter({
       component: EmptyRouteView,
     },
     {
+      path: '/modex',
+      name: 'modex',
+      component: EmptyRouteView,
+    },
+    {
       path: '/new-thread',
       redirect: { name: 'home' },
     },
