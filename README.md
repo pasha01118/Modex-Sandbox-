@@ -229,6 +229,16 @@
   <div style="font-size:12px;color:#7878a0;font-family:Consolas,monospace;margin-top:4px;">Auto-heal, health checks, git auto-update</div>
 </td>
 </tr>
+<tr>
+<td style="padding:18px 20px;border:1px solid #ff660033;background:linear-gradient(135deg,#ff660008,#ff660002);">
+  <div style="font-size:15px;font-family:'Segoe UI',Arial,sans-serif;font-weight:800;color:#ff6600;text-shadow:0 0 10px #ff660044;">👑 MODEX HOD</div>
+  <div style="font-size:12px;color:#7878a0;font-family:Consolas,monospace;margin-top:4px;">Boss agent with persistent memory, roadmap enforcement, scope guard</div>
+</td>
+<td style="padding:18px 20px;border:1px solid #00f5ff33;background:linear-gradient(135deg,#00f5ff08,#00f5ff02);">
+  <div style="font-size:15px;font-family:'Segoe UI',Arial,sans-serif;font-weight:800;color:#00f5ff;text-shadow:0 0 10px #00f5ff44;">📱 Mobile-First</div>
+  <div style="font-size:12px;color:#7878a0;font-family:Consolas,monospace;margin-top:4px;">9-tab responsive layout, Termux-ready</div>
+</td>
+</tr>
 </table>
 
 </div>
@@ -295,7 +305,80 @@
 
 ---
 
-<!-- ARCHITECTURE -->
+<!-- MODEX HOD AGENT -->
+<div style="background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);padding:30px 20px;border-radius:16px;border:1px solid #ff660044;box-shadow:0 0 40px #ff660022,inset 0 0 60px #00000044;margin:20px 0;">
+
+<h2 align="center" style="font-family:'Segoe UI',Arial,sans-serif;font-size:26px;font-weight:800;background:linear-gradient(90deg,#ff6600,#ff00ff,#00f5ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:2px;">
+  👑 MODEX — HEAD OF DEPARTMENT
+</h2>
+
+<div align="center" style="color:#a0a0c0;font-family:Consolas,monospace;font-size:13px;letter-spacing:1px;margin-bottom:20px;">
+  Boss agent with persistent memory — never forgets, never leaves the roadmap
+</div>
+
+<!-- WORKING STYLE PIPELINE -->
+<div align="center" style="background:#0a0a1e;border-radius:12px;padding:20px;border:1px solid #ff660033;margin-bottom:20px;">
+<pre style="background:transparent;color:#c0c0e0;font-family:Consolas,monospace;font-size:13px;margin:0;line-height:2;text-align:center;display:inline-block;">
+<span style="color:#ff6600;font-weight:700;">PLAN</span>  →  <span style="color:#00f5ff;font-weight:700;">CHECK</span>  →  <span style="color:#ff00ff;font-weight:700;">DO</span>  →  <span style="color:#22c55e;font-weight:700;">VERIFY</span>  →  <span style="color:#f59e0b;font-weight:700;">LEARN</span>  →  <span style="color:#6366f1;font-weight:700;">NEXT</span>
+  │          │          │           │            │           │
+  ▼          ▼          ▼           ▼            ▼           ▼
+ Define    Gate      Execute    Run        Record      Move to
+ roadmap   checks   task       criteria   outcomes    next task
+</pre>
+</div>
+
+<div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;">
+
+<div style="flex:1;min-width:250px;padding:16px;border-radius:10px;background:linear-gradient(135deg,#ff660011,#ff660005);border:1px solid #ff660044;">
+  <div style="font-family:Consolas,monospace;font-size:13px;font-weight:700;color:#ff6600;text-shadow:0 0 6px #ff660044;">📋 Roadmap Enforcement</div>
+  <div style="font-size:12px;color:#7878a0;font-family:Consolas,monospace;margin-top:6px;line-height:1.5;">
+    6-phase roadmap with gate conditions. No phase skips — every task must pass verification before moving on.
+  </div>
+</div>
+
+<div style="flex:1;min-width:250px;padding:16px;border-radius:10px;background:linear-gradient(135deg,#00f5ff11,#00f5ff05);border:1px solid #00f5ff44;">
+  <div style="font-family:Consolas,monospace;font-size:13px;font-weight:700;color:#00f5ff;text-shadow:0 0 6px #00f5ff44;">🧠 Persistent Memory</div>
+  <div style="font-size:12px;color:#7878a0;font-family:Consolas,monospace;margin-top:6px;line-height:1.5;">
+    Decisions, learnings, and context notes persist to disk. Survives crashes, never loses project state.
+  </div>
+</div>
+
+<div style="flex:1;min-width:250px;padding:16px;border-radius:10px;background:linear-gradient(135deg,#22c55e11,#22c55e05);border:1px solid #22c55e44;">
+  <div style="font-family:Consolas,monospace;font-size:13px;font-weight:700;color:#22c55e;text-shadow:0 0 6px #22c55e44;">🛡️ Scope Guard</div>
+  <div style="font-size:12px;color:#7878a0;font-family:Consolas,monospace;margin-top:6px;line-height:1.5;">
+    Detects scope creep. Blocks tasks not in the roadmap. Protects projects from getting spoiled or damaged.
+  </div>
+</div>
+
+</div>
+
+<br/>
+
+<!-- 6-PHASE ROADMAP -->
+<div style="background:#0a0a1e;border-radius:12px;padding:20px;border:1px solid #ff660033;">
+<pre style="background:transparent;color:#c0c0e0;font-family:Consolas,monospace;font-size:12px;margin:0;line-height:1.8;text-align:left;display:inline-block;">
+<span style="color:#ff6600;font-weight:700;">Default 6-Phase Roadmap:</span>
+
+  <span style="color:#00f5ff;">Phase 1: Discovery & Planning</span>    gate: plan-complete, scope-defined
+  <span style="color:#00f5ff;">Phase 2: Architecture & Design</span>   gate: architecture-approved, data-model-defined
+  <span style="color:#ff00ff;">Phase 3: Implementation</span>          gate: core-features-built, tests-written
+  <span style="color:#ff00ff;">Phase 4: Testing & QA</span>            gate: all-tests-pass, no-critical-bugs
+  <span style="color:#22c55e;">Phase 5: Deployment & Release</span>    gate: docs-complete, build-verified
+  <span style="color:#22c55e;">Phase 6: Review & Retrospective</span>  gate: review-complete, learnings-recorded
+</pre>
+</div>
+
+<br/>
+
+<div align="center" style="color:#7878a0;font-family:Consolas,monospace;font-size:12px;line-height:1.8;">
+  <span style="color:#ff6600;">Health Monitoring</span> — real-time scoring with healthy/warning/critical/stalled states<br/>
+  <span style="color:#ff00ff;">Decision Log</span> — every action recorded with rationale and reversibility<br/>
+  <span style="color:#00f5ff;">Learning System</span> — patterns and anti-patterns accumulate across tasks
+</div>
+
+</div>
+
+---
 <h2 align="center" style="font-family:'Segoe UI',Arial,sans-serif;font-size:24px;font-weight:800;background:linear-gradient(90deg,#ff6600,#ff00ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:2px;">🏗️ ARCHITECTURE</h2>
 
 <div align="center" style="background:#0a0a1e;border-radius:12px;padding:20px;border:1px solid #ff00ff33;margin:20px 0;overflow-x:auto;">
@@ -317,7 +400,11 @@
 │   │   ├── <span style="color:#ff6600;">taskPlanner.ts</span>    <span style="color:#6060a0;"># LLM goal planner (Ollama)</span>
 │   │   ├── <span style="color:#ff6600;">agentOrchestrator.ts</span> <span style="color:#6060a0;"># Central orchestrator</span>
 │   │   ├── <span style="color:#ff6600;">selfHeal.ts</span>       <span style="color:#6060a0;"># Health + auto-update</span>
-│   │   └── <span style="color:#ff6600;">defaultAgents.ts</span>  <span style="color:#6060a0;"># 3 built-in agents</span>
+│   │   ├── <span style="color:#ff6600;">defaultAgents.ts</span>  <span style="color:#6060a0;"># 3 built-in agents</span>
+│   │   ├── <span style="color:#ff6600;">modexMemory.ts</span>    <span style="color:#ff6600;font-weight:700;"># ★ MODEX persistent memory</span>
+│   │   ├── <span style="color:#ff6600;">modexBoss.ts</span>      <span style="color:#ff6600;font-weight:700;"># ★ MODEX HOD brain</span>
+│   │   ├── <span style="color:#ff6600;">modexOrchestrator.ts</span> <span style="color:#ff6600;font-weight:700;"># ★ MODEX compliance gate</span>
+│   │   └── <span style="color:#ff6600;">modexApi.ts</span>      <span style="color:#ff6600;font-weight:700;"># ★ MODEX REST API</span>
 │   ├── <span style="color:#22c55e;">agentRouter.ts</span>    <span style="color:#6060a0;"># 17 agent API endpoints</span>
 │   ├── <span style="color:#22c55e;">ollamaRouter.ts</span>   <span style="color:#6060a0;"># Ollama backend proxy</span>
 │   ├── <span style="color:#22c55e;">sentinelRouter.ts</span> <span style="color:#6060a0;"># Security agents</span>
